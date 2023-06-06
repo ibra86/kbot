@@ -1,6 +1,7 @@
 apiVersion: v2
 name: helm
 description: A Helm chart for Kubernetes
+icon: https://cdn.coinranking.com/_vq2Tup-Q/Korbot.svg
 
 # A chart can be either an 'application' or a 'library' chart.
 #

@@ -1,16 +1,13 @@
-# Default values for helm.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
-
-replicaCount: 1
-
 image:
-  repository: ibra86
-  tag: "v1.0.6-583901b"
-  arch: amd64
+  repository: ibra86dspl
+  tag: v.1.0.5-d3215e4
+  arch: arm64
 secret:
   name: kbot
   env: TELE_TOKEN
   key: token
-securityContext:
-  priviledged: true
+autoscaling:
+  enabled: false
+replicaCount: 1
+service:
+  port: 80
