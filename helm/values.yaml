@@ -1,6 +1,6 @@
 image:
   repository: ibra86dspl
-  tag: v.1.0.9-8f41054
+  tag: v.1.0.9-81d3f09
   arch: arm64
 secret:
   name: kbot
