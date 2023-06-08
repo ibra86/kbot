@@ -3,9 +3,9 @@ image:
   tag: v.1.0.5-d3215e4
   arch: arm64
 secret:
-  name: kbot
   env: TELE_TOKEN
   key: token
+  name: kbot
 autoscaling:
   enabled: false
 replicaCount: 1

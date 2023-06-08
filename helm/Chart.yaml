@@ -1,5 +1,5 @@
 apiVersion: v2
-name: helm
+name: kbot
 description: A Helm chart for Kubernetes
 icon: https://cdn.coinranking.com/_vq2Tup-Q/Korbot.svg
 
