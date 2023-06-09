@@ -10,6 +10,9 @@ jobs:
   ci:
     name: CI
     runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
 
     steps:
       - name: Checkout
@@ -32,6 +35,8 @@ jobs:
           APP: kbot
           REGISTRY: ${{env.CONTAINER_REGISTRY}}/${{env.CONTATINER_REGISTRY_USERNAME}}
         run: make image push REGISTRY=$REGISTRY
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
 
   cd:
     name: CD
