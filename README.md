@@ -17,7 +17,7 @@ go build -ldflags "-X="github.com/ibra86/kbot/cmd.appVersion=<your-app-version>
 ## Usage
 
 ```sh
-.\kbot start
+./kbot start
 ```
 
 This will start the Kbot command and connect it to your Telegram bot. Kbot will listen for messages sent to your bot and respond to them based on the specified command.
