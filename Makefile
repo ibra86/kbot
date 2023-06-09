@@ -21,6 +21,10 @@ check:
 	@echo "REGISTRY: $(REGISTRY)"
 	@echo "VERSION: $(VERSION)"
 
+git_tags:
+	@echo 1 $(shell git describe --tags)
+	@echo 2 $(shell git tag|cat)
+	@echo 3 $(shell git describe)
 
 build: format get
 	CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -v -o kbot -ldflags "-X github.com/ibra86/kbot/cmd.appVersion=${VERSION}"

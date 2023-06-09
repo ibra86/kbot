@@ -17,6 +17,9 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Run make git_tags
+        run: make git_tags
+
       - name: Run simple make check
         run: make check
 
