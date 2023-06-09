@@ -17,8 +17,21 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Run test
-        run: make test
+      - name: Run simple make check
+        run: make check
+
+      - name: Run env vars make check
+        env:
+          APP: kbot
+          REGISTRY: ${{env.CONTAINER_REGISTRY}}/${{env.CONTATINER_REGISTRY_USERNAME}}
+        run: make check
+
+      - name: Run passed params make check
+        run: make check REGISTRY=${{env.CONTAINER_REGISTRY}}/${{env.CONTATINER_REGISTRY_USERNAME}}
+
+      env:
+          APP: kbot
+          REGISTRY: ${{env.CONTAINER_REGISTRY}}/${{env.CONTATINER_REGISTRY_USERNAME}}
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v2
