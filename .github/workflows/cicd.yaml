@@ -4,6 +4,7 @@ on: push
 
 env:
   CONTAINER_REGISTRY: ghcr.io
+  CONTATINER_REGISTRY_USERNAME: ibra86
 
 jobs:
   ci:
@@ -29,7 +30,7 @@ jobs:
       - name: Build&Push
         env:
           APP: kbot
-          REGISTRY: ${{env.CONTAINER_REGISTRY}}
+          REGISTRY: ${{env.CONTAINER_REGISTRY}}/${{env.CONTATINER_REGISTRY_USERNAME}}
         run: make image push
 
   cd:
