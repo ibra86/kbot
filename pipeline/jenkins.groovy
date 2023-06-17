@@ -2,7 +2,8 @@ pipeline {
     agent any
     parameters {
 
-        choice(name: 'OS', choices: ['linux', 'darwin', 'windows', 'all'], description: 'Pick OS')
+        choice(name: 'OS', choices: ['linux', 'darwin', 'windows'], description: 'Pick OS')
+        choice(name: 'ARCH', choices: ['amd64', 'arm64'], description: 'Pick architecture')
 
     }
     stages {
@@ -12,6 +13,41 @@ pipeline {
 
                 echo "Build for arch: ${params.ARCH}"
 
+            }
+
+        stage("version"){
+            steps {
+                script {
+                    echo 'GET VERSION'
+                    sh 'go version'
+                }
+            }
+        }
+        
+        stage("build"){
+            steps {
+                script {
+                    echo 'BUILD EXECUTION STARTED'
+                    sh 'make build'
+                }
+            }
+        }
+        
+        stage("image"){
+            steps {
+                script{
+                    echo 'BUILD EXECUTION STARTED'
+                    sh 'make image'
+                }
+            }
+        }
+        
+        stage("push"){
+            steps {
+                script{
+                    docker.withRegistry('', 'DOCKER_HUB')
+                    sh 'make push'
+                }
             }
         }
     }

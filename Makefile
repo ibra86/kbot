@@ -11,7 +11,7 @@ format:
 	gofmt -s -w ./
 
 lint:
-	golint
+	staticcheck
 
 test:
 	go test -v
