@@ -14,6 +14,41 @@ pipeline {
                 echo "Build for arch: ${params.ARCH}"
 
             }
+
+        stage("version"){
+            steps {
+                script {
+                    echo 'GET VERSION'
+                    sh 'go version'
+                }
+            }
+        }
+        
+        stage("build"){
+            steps {
+                script {
+                    echo 'BUILD EXECUTION STARTED'
+                    sh 'make build'
+                }
+            }
+        }
+        
+        stage("image"){
+            steps {
+                script{
+                    echo 'BUILD EXECUTION STARTED'
+                    sh 'make image'
+                }
+            }
+        }
+        
+        stage("push"){
+            steps {
+                script{
+                    docker.withRegistry('', 'DOCKER_HUB')
+                    sh 'make push'
+                }
+            }
         }
 <<<<<<< HEAD
 
