@@ -1,8 +1,8 @@
 APP=$(shell basename $(shell git remote get-url origin))
 REGISTRY=ibra86dspl
 VERSION=$(shell git describe --tags --abbrev=0)-$(shell git rev-parse --short HEAD)
-TARGETOS=linux
-TARGETARCH=arm64
+TARGETOS=linux # darwin windows
+TARGETARCH=arm64 # amd64
 
 get:
 	go get
