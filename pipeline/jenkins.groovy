@@ -15,6 +15,7 @@ pipeline {
 
             }
         }
+<<<<<<< HEAD
 
         stage("version"){
             steps {
@@ -51,5 +52,7 @@ pipeline {
                 }
             }
         }
+=======
+>>>>>>> ef5a16b (add init jenkins pipeline)
     }
 }
