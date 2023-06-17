@@ -14,6 +14,7 @@ pipeline {
                 echo "Build for arch: ${params.ARCH}"
 
             }
+        }
 
         stage("version"){
             steps {
