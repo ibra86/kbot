@@ -29,3 +29,7 @@ Kbot currently supports any command with the following option:
 #### `hello`
 
 When the user sends for example `/start hello` command to the bot, Kbot will respond with a greeting message.
+
+## GitOps Workflow
+
+![GitOps_Workflow](git-ops.drawio.png)
