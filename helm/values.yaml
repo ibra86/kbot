@@ -1,6 +1,6 @@
 image:
   repository: ghcr.io/ibra86
-  tag: v1.0.10-ff214e5
+  tag: v1.0.10-4e5aeb8
   arch: arm64
 secret:
   env: TELE_TOKEN
