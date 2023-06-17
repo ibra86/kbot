@@ -13,6 +13,13 @@ read -s TELE_TOKEN # beforehand copy to the buffer <your-telegram-bot-token>
 export TELE_TOKEN
 go build -ldflags "-X="github.com/ibra86/kbot/cmd.appVersion=<your-app-version>
 ```
+## Makefile
+
+Build a makefile with (default os is linux, architecture is arm64)
+```sh
+make <action> [TARGETOS=darwin] [TARGETARCH=amd64]
+```
+
 
 ## Usage
 
