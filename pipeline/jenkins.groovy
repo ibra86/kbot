@@ -24,7 +24,16 @@ pipeline {
                 }
             }
         }
-        
+
+        stage("test"){
+            steps {
+                script {
+                    echo 'TEST EXECUTION STARTED'
+                    sh 'make test'
+                }
+            }
+        }
+
         stage("build"){
             steps {
                 script {
@@ -46,7 +55,8 @@ pipeline {
         stage("push"){
             steps {
                 script{
-                    docker.withRegistry('', 'DOCKER_HUB')
+                    echo 'PUSH TO DOCKER_HUB'
+                    docker.withRegistry('', 'dockerhub')
                     sh 'make push'
                 }
             }
