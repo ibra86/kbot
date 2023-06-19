@@ -1,5 +1,5 @@
 APP=$(shell basename $(shell git remote get-url origin))
-REGISTRY=ibra86dspl
+REGISTRY=ghcr.io/ibra86
 VERSION=$(shell git describe --tags --abbrev=0)-$(shell git rev-parse --short HEAD)
 TARGETOS=linux# darwin windows
 TARGETARCH=amd64# amd64
