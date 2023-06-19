@@ -56,7 +56,7 @@ pipeline {
             steps {
                 script{
                     echo 'PUSH TO DOCKER_HUB'
-                    docker.withRegistry('', 'dockerhub')
+                    docker.withRegistry( '', 'dockerhub' )
                     sh 'make push'
                 }
             }
