@@ -1,5 +1,5 @@
 image:
-  repository: ghcr.io/ibra86
+  repository: ibra86dspl
   tag: v1.0.10-dc1521e
   os: linux
   arch: amd64
