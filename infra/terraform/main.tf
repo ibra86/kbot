@@ -1,10 +1,8 @@
-
-
 terraform {
   required_providers {
     google = {
       source  = "hashicorp/google"
-      version = "4.52.0"
+      version = "4.67.0"
     }
   }
   backend "gcs" {
@@ -21,9 +19,11 @@ provider "google" {
 data "google_storage_bucket" "tf_state_bucket" {
   name = "kbot-k8s-k3s-bucket"
 }
-
-module "kind_cluster" {
-  source = "../modules/tf-kind-cluster-cert-auth"
+module "gke_cluster" {
+  source         = "../modules/tf-google-gke-cluster-gke-auth"
+  GOOGLE_REGION  = var.GOOGLE_REGION
+  GOOGLE_PROJECT = var.GOOGLE_PROJECT
+  GKE_NUM_NODES  = 1
 }
 
 module "github_repository" {
@@ -42,14 +42,14 @@ module "tls_private_key" {
 }
 
 module "flux_bootstrap" {
-  source            = "../modules/tf-fluxcd-flux-bootstrap"
+  # source = "github.com/den-vasyliev/tf-fluxcd-flux-bootstrap?ref=gke_auth"
+  source            = "../modules/tf-fluxcd-flux-bootstrap-gke-auth"
   github_repository = "${var.GITHUB_OWNER}/${var.FLUX_GITHUB_REPO}"
   private_key       = module.tls_private_key.private_key_pem
 
-  config_host       = module.kind_cluster.endpoint
-  config_client_key = module.kind_cluster.client_key
-  config_ca         = module.kind_cluster.ca
-  config_crt        = module.kind_cluster.crt
+  config_host  = module.gke_cluster.config_host
+  config_ca    = module.gke_cluster.config_ca
+  config_token = module.gke_cluster.config_token
 
   github_token = var.GITHUB_TOKEN
 }
