@@ -1,0 +1,6 @@
+
+version:
+  image: golang:1.19
+  script:
+    - GET GO VERSION
+    - go version
