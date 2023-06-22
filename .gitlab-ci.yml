@@ -1,6 +1,31 @@
+variables:
+  OS: 'linux'
+  ARCH: 'amd64'
+  DOCKER_TLS_CERTDIR: "/certs"
 
-version:
-  image: golang:1.19
+default:
+  image: docker:24.0.2
+  services:
+    - docker:24.0.2-dind
+  before_script:
+    - docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD
+    - apk add go make git
+
+stages:
+  - start
+  - make
+
+example:
+  stage: start
   script:
-    - GET GO VERSION
-    - go version
+    - echo "Build for platform $OS"
+    - echo "Build for arch $ARCH"
+    - make check
+
+make:
+  stage: make
+  script:
+    - make test
+    - make build TARGETOS=$OS TARGETARCH=$ARCH
+    - make image TARGETOS=$OS TARGETARCH=$ARCH
+    - make push TARGETOS=$OS TARGETARCH=$ARCH
