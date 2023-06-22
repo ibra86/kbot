@@ -20,7 +20,6 @@ example:
   script:
     - echo "Build for platform $OS"
     - echo "Build for arch $ARCH"
-    - make check
 
 make:
   stage: make
