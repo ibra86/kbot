@@ -3,8 +3,7 @@ name: KBOT-CICD
 on:
   push:
     branches:
-      - develop
-
+      - main
 
 env:
   CONTAINER_REGISTRY: ghcr.io
