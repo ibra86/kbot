@@ -1,0 +1,3 @@
+FLUX_GITHUB_REPO = "flux-gitops"
+GITHUB_OWNER = "ibra86"
+GOOGLE_PROJECT = "k8s-k3s-386219"

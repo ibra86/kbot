@@ -9,12 +9,6 @@ variable "GOOGLE_REGION" {
   description = "GCP region to use"
 }
 
-variable "GOOGLE_ZONE" {
-  type        = string
-  default     = "us-central1-c"
-  description = "GCP region to use"
-}
-
 variable "GITHUB_OWNER" {
   type        = string
   description = "GitHub owner repository to use"
@@ -27,6 +21,12 @@ variable "GITHUB_TOKEN" {
 
 variable "FLUX_GITHUB_REPO" {
   type        = string
-  default     = "kbot-flux-gitops"
+  default     = "flux-gitops"
   description = "Flux GitOps repository"
+}
+
+variable "FLUX_GITHUB_TARGET_PATH" {
+  type        = string
+  default     = "clusters"
+  description = "Flux manifests subdirectory"
 }
