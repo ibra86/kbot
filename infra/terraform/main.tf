@@ -7,13 +7,8 @@ terraform {
   }
   backend "gcs" {
     bucket = "kbot-k8s-k3s-bucket"
-    prefix = "terraform/state"
+    prefix = "terraform-sops/state"
   }
-}
-
-provider "google" {
-  project = var.GOOGLE_PROJECT
-  region  = var.GOOGLE_REGION
 }
 
 data "google_storage_bucket" "tf_state_bucket" {
@@ -23,7 +18,7 @@ module "gke_cluster" {
   source         = "../modules/tf-google-gke-cluster-gke-auth"
   GOOGLE_REGION  = var.GOOGLE_REGION
   GOOGLE_PROJECT = var.GOOGLE_PROJECT
-  GKE_NUM_NODES  = 1
+  GKE_NUM_NODES  = 2
 }
 
 module "github_repository" {
@@ -32,7 +27,7 @@ module "github_repository" {
   github_token             = var.GITHUB_TOKEN
   repository_name          = var.FLUX_GITHUB_REPO
   public_key_openssh       = module.tls_private_key.public_key_openssh
-  public_key_openssh_title = "flux0"
+  public_key_openssh_title = "flux-ssh-pub"
 }
 
 
