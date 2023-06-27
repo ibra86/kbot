@@ -37,7 +37,6 @@ module "tls_private_key" {
 }
 
 module "flux_bootstrap" {
-  # source = "github.com/den-vasyliev/tf-fluxcd-flux-bootstrap?ref=gke_auth"
   source            = "../modules/tf-fluxcd-flux-bootstrap-gke-auth"
   github_repository = "${var.GITHUB_OWNER}/${var.FLUX_GITHUB_REPO}"
   private_key       = module.tls_private_key.private_key_pem
