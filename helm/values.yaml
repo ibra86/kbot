@@ -1,6 +1,6 @@
 image:
-  repository: ibra86dspl
-  tag: v1.1.0-9801631
+  repository: ghcr.io/ibra86 
+  tag: v1.0.10-9801631
   os: linux
   arch: amd64
 secret:
