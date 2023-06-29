@@ -3,29 +3,85 @@ name: KBOT-CICD
 on: push
 
 env:
-  CONTAINER_REGISTRY: ghcr.io
-  CONTATINER_REGISTRY_USERNAME: ibra86
+  GITHUB_PROJECT: k8s-k3s-386219
+  GCP_KEYRING: sops-flux
+  GCP_KEYRING_KEY: sops-key-flux
 
 jobs:
-  ci:
-    name: CI
+  sops:
+    name: sops
     runs-on: ubuntu-latest
-    # permissions:
-      # packages: write
-      # contents: read
+    # # Add "id-token" with the intended permissions.
+    permissions:
+    #   contents: 'read'
+      id-token: 'write'
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+    # - uses: 'actions/checkout@v3'
+    # - uses: actions-hub/kubectl@master
+    - uses: 'google-github-actions/auth@v1'
+      with:
+        workload_identity_provider: 'projects/309987332695/locations/global/workloadIdentityPools/sops-pool-2/providers/sops-wip-provider-2'
+        service_account: 'github-actions-sa-2@k8s-k3s-386219.iam.gserviceaccount.com'
+    - uses: 'google-github-actions/setup-gcloud@v1'
 
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v2
-        with:
-          registry: ${{env.CONTAINER_REGISTRY}}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+    # # Configure Workload Identity Federation via a credentials file.
+    # - id: 'auth'
+    #   name: 'Authenticate to Google Cloud'
+    #   # uses: 'google-github-actions/auth@v1'
+    #   # with:
+    #   #   workload_identity_provider: 'projects/309987332695/locations/global/workloadIdentityPools/sops-pool/providers/sops-wip-provider'
+    #   #   service_account: 'github-actions-sa@k8s-k3s-386219.iam.gserviceaccount.com'
 
-      - name: Build&Push
-        run: |
-          docker build . --tag ghcr.io/ibra86/kbot:test-tag
-          docker push ghcr.io/ibra86/kbot:test-tag
+    # # Install gcloud, `setup-gcloud` automatically picks up authentication from `auth`.
+    # - name: 'Set up Cloud SDK'
+    #   uses: 'google-github-actions/setup-gcloud@v1'
+
+    # Now you can run gcloud commands authenticated as the impersonated service account.
+    - id: 'gcloud'
+      name: 'gcloud'
+      run: |
+        gcloud config list
+
+    - id: install_sops
+      name: install_sops
+      run: |
+        curl -O -L -C - https://github.com/mozilla/sops/releases/download/v3.7.3/sops-v3.7.3.linux
+        sudo mv sops-v3.7.3.linux /usr/bin/sops
+        sudo chmod +x /usr/bin/sops
+
+    - id: 'sops_encrypt'
+      name: 'sops_ecnrypt'
+      run: |
+        echo '{"token": "hello"}' | sops -e -gcp-kms projects/k8s-k3s-386219/locations/global/keyRings/sops-flux-2/cryptoKeys/sops-key-flux --encrypted-regex '^(token)$' --input-type json --output-type yaml /dev/stdin
+
+    # steps:
+#       - name: Checkout
+#         uses: actions/checkout@v3
+#         uses: 'google-github-actions/auth@v1'
+#         with:
+#           workload_identity_provider: 'projects/309987332695/locations/global/workloadIdentityPools/sops-pool/providers/sops-wip-provider'
+#           service_account: 'github-actions-sa@k8s-k3s-386219.iam.gserviceaccount.com'
+
+#         uses: actions-hub/kubectl@master
+
+#       - name: install sops
+#         run: |
+#           curl -O -L -C - https://github.com/mozilla/sops/releases/download/v3.7.3/sops-v3.7.3.linux
+#           sudo mv sops-v3.7.3.linux /usr/bin/sops
+#           sudo chmod +x /usr/bin/sops
+#       - name: install gcloud
+#         uses: 'google-github-actions/auth@v1'
+#         run: |
+#           curl -O -L -C - https://github.com/mozilla/sops/releases/download/v3.7.3/sops-v3.7.3.linux
+#           sudo mv sops-v3.7.3.linux /usr/bin/sops
+#           sudo chmod +x /usr/bin/sops
+# ...   - name: auth to GCP and check
+#         run: gcloud config list
+#       - name: install kubectl
+#         # uses: actions-hub/kubectl@master
+#         run: kubectl -n demo create secret generic kbot --from-literal=token=$TELE_TOKEN --dry-run=client -o yaml | sops -e -gcp-kms projects/${{env.GITHUB_PROJECT}}/locations/global/keyRings/${{env.GCP_KEYRING}}/cryptoKeys/${{env.GCP_KEYRING_KEY}} --encrypted-regex '^(token)$' --input-type yaml --output-type yaml /dev/stdin
+#       - name: push secret to flux-sops-gitops
+#         run: |
+#           docker build . --tag ghcr.io/ibra86/kbot:test-tag
+#           docker push ghcr.io/ibra86/kbot:test-tag
