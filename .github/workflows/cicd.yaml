@@ -18,48 +18,103 @@ jobs:
 
     steps:
     - uses: 'actions/checkout@v3'
-    - uses: 'google-github-actions/auth@v1'
-      with:
-        workload_identity_provider: 'projects/309987332695/locations/global/workloadIdentityPools/sops-pool-2/providers/sops-wip-provider-2'
-        service_account: 'github-actions-sa-2@k8s-k3s-386219.iam.gserviceaccount.com'
+    # - uses: 'google-github-actions/auth@v1'
+    #   with:
+    #     workload_identity_provider: 'projects/309987332695/locations/global/workloadIdentityPools/sops-pool-2/providers/sops-wip-provider-2'
+    #     service_account: 'github-actions-sa-2@k8s-k3s-386219.iam.gserviceaccount.com'
     # - uses: 'google-github-actions/setup-gcloud@v1'
 
-    # - id: 'gcloud'
-    #   name: 'gcloud'
-    #   run: |
-    #     gcloud config list
-
-    # - name: secret-step
-    #   run: |
+    # - run: |
     #     pwd
     #     ls -lsa
-    #     cd helm
-    #     cat secret-template.yaml
 
-    - name: yq 
-      uses: mikefarah/yq@master
+    - name: Clone another repository
+      uses: actions/checkout@v3
       with:
-        cmd: yq -i '.data.token="${{env.GITHUB_PROJECT}}"' helm/secret-template.yaml
-
-    - name: new-secret-setp
-      run: |
+        repository: ibra86/flux-gitops
+        token: ${{ secrets.ACCESS_TOKEN }}
+        path: new-repo
+        ref: main
+      
+    - run: |
         pwd
         ls -lsa
-        cd helm
-        cat secret-template.yaml
+        cd new-repo
+        pwd
+        ls -lsa
+        cp ../helm/secret-template.yaml .
+        git config user.name github-actions
+        git config user.email github-actions@github.com
+        git status
+        git add secret-template.yaml .
+        git status
+        git commit -m "secret-template.yaml"
+        git push
 
 
-    - id: install_sops
-      name: install_sops
-      run: |
-        curl -O -L -C - https://github.com/mozilla/sops/releases/download/v3.7.3/sops-v3.7.3.linux
-        sudo mv sops-v3.7.3.linux /usr/bin/sops
-        sudo chmod +x /usr/bin/sops
+    # - name: Push file to target repository
+    #   run: |
+    #     git config user.name github-actions
+    #     git config user.email github-actions@github.com
 
-    - id: 'sops_encrypt'
-      name: 'sops_ecnrypt'
-      run: |
-        echo '{"token": "hello"}' | sops -e -gcp-kms projects/k8s-k3s-386219/locations/global/keyRings/sops-flux-2/cryptoKeys/sops-key-flux --encrypted-regex '^(token)$' --input-type json --output-type yaml /dev/stdin
+    #     git clone --depth 1 https://github.com/ibra86/flux-gitops target-repo
+    #     cp helm/secret-template.yaml target-repo/flux-gitops/clusters/demo
+    #     cd target-repo
+
+    #     git add .
+    #     git commit -m "Update file from source repository"
+    #     git push --quiet origin main
+
+
+    # # - id: 'gcloud'
+    # #   name: 'gcloud'
+    # #   run: |
+    # #     gcloud config list
+
+    # # - name: secret-step
+    # #   run: |
+    # #     pwd
+    # #     ls -lsa
+    # #     cd helm
+    # #     cat secret-template.yaml
+
+    # - name: yq 
+    #   uses: mikefarah/yq@master
+    #   with:
+    #     cmd: yq -i '.data.token="${{env.GITHUB_PROJECT}}"' helm/secret-template.yaml
+
+    # # - name: new-secret-setp
+    # #   run: |
+    # #     pwd
+    # #     ls -lsa
+    # #     cd helm
+    # #     cat secret-template.yaml
+
+
+    # - name: install-sops
+    #   run: |
+    #     curl -O -L -C - https://github.com/mozilla/sops/releases/download/v3.7.3/sops-v3.7.3.linux
+    #     sudo mv sops-v3.7.3.linux /usr/bin/sops
+    #     sudo chmod +x /usr/bin/sops
+
+    # - name: 'sops-ecnrypt'
+    #   run: |
+    #     cat helm/secret-template.yaml
+    #     cat helm/secret-template.yaml | sops -e -gcp-kms projects/k8s-k3s-386219/locations/global/keyRings/sops-flux-2/cryptoKeys/sops-key-flux --encrypted-regex '^(token)$' --input-type yaml --output-type yaml /dev/stdin
+
+    # - name: Push file to target repository
+    #   run: |
+    #     git config user.name github-actions
+    #     git config user.email github-actions@github.com
+
+    #     git clone --depth 1 https://github.com/ibra86/flux-gitops target-repo
+    #     cp helm/secret-template.yaml target-repo/flux-gitops/clusters/demo
+    #     cd target-repo
+
+    #     git add .
+    #     git commit -m "Update file from source repository"
+    #     git push --quiet origin main
+
 
     # steps:
 #       - name: Checkout
