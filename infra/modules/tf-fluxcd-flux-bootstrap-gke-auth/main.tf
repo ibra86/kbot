@@ -15,4 +15,5 @@ provider "flux" {
 
 resource "flux_bootstrap_git" "this" {
   path = var.target_path
+  components_extra = ["image-reflector-controller","image-automation-controller"]
 }
