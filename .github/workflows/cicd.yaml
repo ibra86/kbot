@@ -17,31 +17,37 @@ jobs:
       id-token: 'write'
 
     steps:
-    # - uses: 'actions/checkout@v3'
-    # - uses: actions-hub/kubectl@master
+    - uses: 'actions/checkout@v3'
     - uses: 'google-github-actions/auth@v1'
       with:
         workload_identity_provider: 'projects/309987332695/locations/global/workloadIdentityPools/sops-pool-2/providers/sops-wip-provider-2'
         service_account: 'github-actions-sa-2@k8s-k3s-386219.iam.gserviceaccount.com'
-    - uses: 'google-github-actions/setup-gcloud@v1'
+    # - uses: 'google-github-actions/setup-gcloud@v1'
 
-    # # Configure Workload Identity Federation via a credentials file.
-    # - id: 'auth'
-    #   name: 'Authenticate to Google Cloud'
-    #   # uses: 'google-github-actions/auth@v1'
-    #   # with:
-    #   #   workload_identity_provider: 'projects/309987332695/locations/global/workloadIdentityPools/sops-pool/providers/sops-wip-provider'
-    #   #   service_account: 'github-actions-sa@k8s-k3s-386219.iam.gserviceaccount.com'
+    # - id: 'gcloud'
+    #   name: 'gcloud'
+    #   run: |
+    #     gcloud config list
 
-    # # Install gcloud, `setup-gcloud` automatically picks up authentication from `auth`.
-    # - name: 'Set up Cloud SDK'
-    #   uses: 'google-github-actions/setup-gcloud@v1'
+    # - name: secret-step
+    #   run: |
+    #     pwd
+    #     ls -lsa
+    #     cd helm
+    #     cat secret-template.yaml
 
-    # Now you can run gcloud commands authenticated as the impersonated service account.
-    - id: 'gcloud'
-      name: 'gcloud'
+    - name: yq 
+      uses: mikefarah/yq@master
+      with:
+        cmd: yq -i '.data.token="${{env.GITHUB_PROJECT}}"' helm/secret-template.yaml
+
+    - name: new-secret-setp
       run: |
-        gcloud config list
+        pwd
+        ls -lsa
+        cd helm
+        cat secret-template.yaml
+
 
     - id: install_sops
       name: install_sops
