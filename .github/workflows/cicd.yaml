@@ -4,145 +4,66 @@ on: push
 
 env:
   GITHUB_PROJECT: k8s-k3s-386219
-  GCP_KEYRING: sops-flux
+  GCP_KEYRING: sops-flux-2
   GCP_KEYRING_KEY: sops-key-flux
+  KMS_CRYPTO_KEY: projects/k8s-k3s-386219/locations/global/keyRings/sops-flux-2/cryptoKeys/sops-key-flux
+  WORKLOAD_IDENTITY_PROVIDER: projects/309987332695/locations/global/workloadIdentityPools/sops-pool-2/providers/sops-wip-provider-2
+  SERVICE_ACCOUNT: github-actions-sa-2@k8s-k3s-386219.iam.gserviceaccount.com
+  FLUX_REPO: ibra86/flux-sops-gitops
 
 jobs:
   sops:
     name: sops
     runs-on: ubuntu-latest
-    # # Add "id-token" with the intended permissions.
+    # Add "id-token" with the intended permissions for google service account.
     permissions:
-    #   contents: 'read'
       id-token: 'write'
 
     steps:
     - uses: 'actions/checkout@v3'
-    # - uses: 'google-github-actions/auth@v1'
-    #   with:
-    #     workload_identity_provider: 'projects/309987332695/locations/global/workloadIdentityPools/sops-pool-2/providers/sops-wip-provider-2'
-    #     service_account: 'github-actions-sa-2@k8s-k3s-386219.iam.gserviceaccount.com'
-    # - uses: 'google-github-actions/setup-gcloud@v1'
+    - uses: 'google-github-actions/auth@v1'
+      with:
+        workload_identity_provider: ${{env.WORKLOAD_IDENTITY_PROVIDER}}
+        service_account: ${{env.SERVICE_ACCOUNT}}
 
-    # - run: |
-    #     pwd
-    #     ls -lsa
-
-    - name: Clone another repository
+    - name: clone-flux-repo
       uses: actions/checkout@v3
       with:
-        repository: ibra86/flux-gitops
-        token: ${{ secrets.ACCESS_TOKEN }}
-        path: new-repo
+        repository: ${{env.FLUX_REPO}}
+        token: ${{secrets.ACCESS_TOKEN}}
+        path: flux-repo
         ref: main
-      
-    - run: |
-        pwd
-        ls -lsa
-        cd new-repo
-        pwd
-        ls -lsa
-        cp ../helm/secret-template.yaml .
+
+    # - name: test-secret
+    #   run: |
+    #     cd flux-repo/
+    #     ls -lsa
+    #     cp ../helm/secret-template.yaml clusters/demo/
+    #     cd clusters/demo
+    #     ls -lsa
+
+    - name: install-sops
+      run: |
+        curl -O -L -C - https://github.com/mozilla/sops/releases/download/v3.7.3/sops-v3.7.3.linux
+        sudo mv sops-v3.7.3.linux /usr/bin/sops
+        sudo chmod +x /usr/bin/sops
+
+    - name: yq 
+      uses: mikefarah/yq@master
+      with:
+        cmd: yq -i '.data.token="${{env.TELE_TOKEN}}"' helm/secret-template.yaml
+
+    - name: 'sops-ecnrypt'
+      run: |
+        cat helm/secret-template.yaml
+        cat helm/secret-template.yaml | sops -e -gcp-kms ${{env.KMS_CRYPTO_KEY}} --encrypted-regex '^(token)$' --input-type yaml --output-type yaml /dev/stdin > helm/secret.yaml
+
+    - name: push-secret
+      run: |
+        cd flux-repo/
+        cp ../helm/secret.yaml clusters/demo/
         git config user.name github-actions
         git config user.email github-actions@github.com
-        git status
-        git add secret-template.yaml .
-        git status
+        git add clusters/demo/secret.yaml
         git commit -m "secret-template.yaml"
         git push
-
-
-    # - name: Push file to target repository
-    #   run: |
-    #     git config user.name github-actions
-    #     git config user.email github-actions@github.com
-
-    #     git clone --depth 1 https://github.com/ibra86/flux-gitops target-repo
-    #     cp helm/secret-template.yaml target-repo/flux-gitops/clusters/demo
-    #     cd target-repo
-
-    #     git add .
-    #     git commit -m "Update file from source repository"
-    #     git push --quiet origin main
-
-
-    # # - id: 'gcloud'
-    # #   name: 'gcloud'
-    # #   run: |
-    # #     gcloud config list
-
-    # # - name: secret-step
-    # #   run: |
-    # #     pwd
-    # #     ls -lsa
-    # #     cd helm
-    # #     cat secret-template.yaml
-
-    # - name: yq 
-    #   uses: mikefarah/yq@master
-    #   with:
-    #     cmd: yq -i '.data.token="${{env.GITHUB_PROJECT}}"' helm/secret-template.yaml
-
-    # # - name: new-secret-setp
-    # #   run: |
-    # #     pwd
-    # #     ls -lsa
-    # #     cd helm
-    # #     cat secret-template.yaml
-
-
-    # - name: install-sops
-    #   run: |
-    #     curl -O -L -C - https://github.com/mozilla/sops/releases/download/v3.7.3/sops-v3.7.3.linux
-    #     sudo mv sops-v3.7.3.linux /usr/bin/sops
-    #     sudo chmod +x /usr/bin/sops
-
-    # - name: 'sops-ecnrypt'
-    #   run: |
-    #     cat helm/secret-template.yaml
-    #     cat helm/secret-template.yaml | sops -e -gcp-kms projects/k8s-k3s-386219/locations/global/keyRings/sops-flux-2/cryptoKeys/sops-key-flux --encrypted-regex '^(token)$' --input-type yaml --output-type yaml /dev/stdin
-
-    # - name: Push file to target repository
-    #   run: |
-    #     git config user.name github-actions
-    #     git config user.email github-actions@github.com
-
-    #     git clone --depth 1 https://github.com/ibra86/flux-gitops target-repo
-    #     cp helm/secret-template.yaml target-repo/flux-gitops/clusters/demo
-    #     cd target-repo
-
-    #     git add .
-    #     git commit -m "Update file from source repository"
-    #     git push --quiet origin main
-
-
-    # steps:
-#       - name: Checkout
-#         uses: actions/checkout@v3
-#         uses: 'google-github-actions/auth@v1'
-#         with:
-#           workload_identity_provider: 'projects/309987332695/locations/global/workloadIdentityPools/sops-pool/providers/sops-wip-provider'
-#           service_account: 'github-actions-sa@k8s-k3s-386219.iam.gserviceaccount.com'
-
-#         uses: actions-hub/kubectl@master
-
-#       - name: install sops
-#         run: |
-#           curl -O -L -C - https://github.com/mozilla/sops/releases/download/v3.7.3/sops-v3.7.3.linux
-#           sudo mv sops-v3.7.3.linux /usr/bin/sops
-#           sudo chmod +x /usr/bin/sops
-#       - name: install gcloud
-#         uses: 'google-github-actions/auth@v1'
-#         run: |
-#           curl -O -L -C - https://github.com/mozilla/sops/releases/download/v3.7.3/sops-v3.7.3.linux
-#           sudo mv sops-v3.7.3.linux /usr/bin/sops
-#           sudo chmod +x /usr/bin/sops
-# ...   - name: auth to GCP and check
-#         run: gcloud config list
-#       - name: install kubectl
-#         # uses: actions-hub/kubectl@master
-#         run: kubectl -n demo create secret generic kbot --from-literal=token=$TELE_TOKEN --dry-run=client -o yaml | sops -e -gcp-kms projects/${{env.GITHUB_PROJECT}}/locations/global/keyRings/${{env.GCP_KEYRING}}/cryptoKeys/${{env.GCP_KEYRING_KEY}} --encrypted-regex '^(token)$' --input-type yaml --output-type yaml /dev/stdin
-#       - name: push secret to flux-sops-gitops
-#         run: |
-#           docker build . --tag ghcr.io/ibra86/kbot:test-tag
-#           docker push ghcr.io/ibra86/kbot:test-tag
