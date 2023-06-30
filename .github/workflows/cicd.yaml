@@ -68,7 +68,7 @@ jobs:
     - name: yq 
       uses: mikefarah/yq@master
       with:
-        cmd: yq -i '.data.token="${{env.TELE_TOKEN}}"' helm/secret-template.yaml
+        cmd: yq -i '.data.token="${{secrets.TELE_TOKEN}}"' helm/secret-template.yaml
 
     - name: 'sops-ecnrypt'
       run: |
