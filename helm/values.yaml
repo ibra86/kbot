@@ -1,6 +1,6 @@
 image:
   repository: ibra86dspl
-  tag: v.1.0.9-81d3f09
+  tag: v1.0.10-e43529f
   arch: arm64
 secret:
   env: TELE_TOKEN
