@@ -11,34 +11,34 @@ env:
   FLUX_REPO: ibra86/flux-sops-gitops
 
 jobs:
-  ci:
-    name: CI
-    runs-on: ubuntu-latest
+#   ci:
+#     name: CI
+#     runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v3
+#         with:
+#           fetch-depth: 0
 
-      - name: Run test
-        run: make test
+#       - name: Run test
+#         run: make test
 
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v2
-        with:
-          registry: ${{env.CONTAINER_REGISTRY}}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+#       - name: Login to GitHub Container Registry
+#         uses: docker/login-action@v2
+#         with:
+#           registry: ${{env.CONTAINER_REGISTRY}}
+#           username: ${{ github.actor }}
+#           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build&Push
-        env:
-          REGISTRY: ${{env.CONTAINER_REGISTRY}}/${{env.CONTATINER_REGISTRY_USERNAME}}
-        run: make image push REGISTRY=$REGISTRY
+#       - name: Build&Push
+#         env:
+#           REGISTRY: ${{env.CONTAINER_REGISTRY}}/${{env.CONTATINER_REGISTRY_USERNAME}}
+#         run: make image push REGISTRY=$REGISTRY
 
   sops:
     name: SOPS
-    needs: ci
+    # needs: ci
     runs-on: ubuntu-latest
     # Add "id-token" with the intended permissions for google service account.
     permissions:
@@ -73,36 +73,39 @@ jobs:
     - name: 'sops-ecnrypt'
       run: |
         cat helm/secret-template.yaml
-        cat helm/secret-template.yaml | sops -e -gcp-kms ${{env.KMS_CRYPTO_KEY}} --encrypted-regex '^(token)$' --input-type yaml --output-type yaml /dev/stdin > helm/secret.yaml
+        cat helm/secret-template.yaml | sops -e -gcp-kms ${{env.KMS_CRYPTO_KEY}} --encrypted-regex '^(token)$' --input-type yaml --output-type yaml /dev/stdin > helm/secret-enc.yaml
+        cat helm/secret-enc.yaml 
 
     - name: push-secret
       run: |
         cd flux-repo/
-        cp ../helm/secret.yaml clusters/demo/
+        cp ../helm/secret-enc.yaml clusters/demo/
+        cat clusters/demo/secret-enc.yaml
         git config user.name github-actions
         git config user.email github-actions@github.com
-        git add clusters/demo/secret.yaml
-        git commit -m "secret-template.yaml"
+        git add clusters/demo/secret-enc.yaml
+        git commit -m "update secret-enc.yaml"
         git push
 
-  cd:
-    name: CD
-    needs: [ci, sops]
-    runs-on: ubuntu-latest
 
-    steps:
+  # cd:
+  #   name: CD
+  #   needs: [ci, sops]
+  #   runs-on: ubuntu-latest
 
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - run: echo "VERSION=$(git describe --tags --abbrev=0)-$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+  #   steps:
 
-      - uses: mikefarah/yq@master
-        with:
-          cmd: yq -i '.image.tag=strenv(VERSION)' helm/values.yaml
+  #     - uses: actions/checkout@v3
+  #       with:
+  #         fetch-depth: 0
+  #     - run: echo "VERSION=$(git describe --tags --abbrev=0)-$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
-      - run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git commit -am "update version $VERSION"
-          git push
+  #     - uses: mikefarah/yq@master
+  #       with:
+  #         cmd: yq -i '.image.tag=strenv(VERSION)' helm/values.yaml
+
+  #     - run: |
+  #         git config user.name github-actions
+  #         git config user.email github-actions@github.com
+  #         git commit -am "update version $VERSION"
+  #         git push
