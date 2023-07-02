@@ -1,10 +1,14 @@
 name: KBOT-CICD
 
-on: push
+on:
+  push:
+    branches:
+      - main
 
 env:
   CONTAINER_REGISTRY: ghcr.io
   CONTATINER_REGISTRY_USERNAME: ibra86
+  GCP_SECRET_ID: k8s-k3s-386219/tele-token
   SERVICE_ACCOUNT: github-actions-sa-2@k8s-k3s-386219.iam.gserviceaccount.com
   KMS_CRYPTO_KEY: projects/k8s-k3s-386219/locations/global/keyRings/sops-flux-2/cryptoKeys/sops-key-flux
   WORKLOAD_IDENTITY_PROVIDER: projects/309987332695/locations/global/workloadIdentityPools/sops-pool-2/providers/sops-wip-provider-2
@@ -51,11 +55,17 @@ jobs:
         workload_identity_provider: ${{env.WORKLOAD_IDENTITY_PROVIDER}}
         service_account: ${{env.SERVICE_ACCOUNT}}
 
+    - id: secrets
+      uses: 'google-github-actions/get-secretmanager-secrets@v1'
+      with:
+        secrets: |-
+          token:${{env.GCP_SECRET_ID}}
+          
     - name: clone-flux-repo
       uses: actions/checkout@v3
       with:
         repository: ${{env.FLUX_REPO}}
-        token: ${{secrets.ACCESS_TOKEN}}
+        token: ${{ secrets.ACCESS_TOKEN }}
         path: flux-repo
         ref: main
 
@@ -68,7 +78,7 @@ jobs:
     - name: yq 
       uses: mikefarah/yq@master
       with:
-        cmd: yq -i '.data.token="${{secrets.TELE_TOKEN}}"' helm/secret-template.yaml
+        cmd: yq -i '.data.token="${{ steps.secrets.outputs.token }}"' helm/secret-template.yaml
 
     - name: 'sops-ecnrypt'
       run: |
