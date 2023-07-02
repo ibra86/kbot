@@ -17,7 +17,11 @@ go build -ldflags "-X="github.com/ibra86/kbot/cmd.appVersion=<your-app-version>
 
 Build a makefile with (default os is linux, architecture is arm64)
 ```sh
-make <action> [TARGETOS=darwin] [TARGETARCH=amd64]
+make <action> [TARGETOS=darwin] [TARGETARCH=arm64]
+```
+
+```sh
+make build TARGETOS=darwin TARGETARCH=arm64
 ```
 
 
