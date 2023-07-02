@@ -1,6 +1,6 @@
 image:
   repository: ghcr.io/ibra86
-  tag: v1.1.0-f797c6b
+  tag: v1.1.0-bd21520
   os: linux
   arch: amd64
 secret:
