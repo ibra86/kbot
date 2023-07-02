@@ -40,7 +40,7 @@ resource "google_iam_workload_identity_pool_provider" "pool-provider" {
   attribute_mapping = {
     "google.subject"       = "assertion.sub",
     "attribute.repository" = "assertion.repository",
-    "attribute.actor"      = "assertion.actor"       
+    "attribute.actor"      = "assertion.actor"
   }
 
   oidc {
@@ -63,8 +63,8 @@ resource "google_kms_crypto_key_iam_binding" "crypto_key" {
   crypto_key_id = data.google_kms_crypto_key.crypto_key.id
   role          = "roles/cloudkms.cryptoKeyEncrypterDecrypter"
   members = [
-        "serviceAccount:${google_service_account.sa.email}",
-    ]
+    "serviceAccount:${google_service_account.sa.email}",
+  ]
 }
 
 resource "google_service_account_iam_binding" "github-actions-iam" {
@@ -72,6 +72,30 @@ resource "google_service_account_iam_binding" "github-actions-iam" {
   role               = "roles/iam.workloadIdentityUser"
 
   members = [
-   "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.pool.name}/attribute.repository/${local.github_repository_name}",
+    "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.pool.name}/attribute.repository/${local.github_repository_name}",
+  ]
+}
+
+resource "google_secret_manager_secret" "secret-basic" {
+  secret_id = "tele-token"
+
+  replication {
+    automatic = true
+  }
+}
+
+
+resource "google_secret_manager_secret_version" "secret-version-basic" {
+  secret = google_secret_manager_secret.secret-basic.id
+
+  secret_data = var.TELE_TOKEN
+}
+
+resource "google_secret_manager_secret_iam_binding" "sm_binding" {
+  project = google_secret_manager_secret.secret-basic.project
+  secret_id = google_secret_manager_secret.secret-basic.secret_id
+  role = "roles/secretmanager.secretAccessor"
+  members = [
+   "serviceAccount:${google_service_account.sa.email}",
   ]
 }
