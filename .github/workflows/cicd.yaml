@@ -50,42 +50,51 @@ jobs:
       with:
         workload_identity_provider: ${{env.WORKLOAD_IDENTITY_PROVIDER}}
         service_account: ${{env.SERVICE_ACCOUNT}}
-
-    - name: clone-flux-repo
-      uses: actions/checkout@v3
+    - id: secrets
+      uses: 'google-github-actions/get-secretmanager-secrets@v1'
       with:
-        repository: ${{env.FLUX_REPO}}
-        token: ${{secrets.ACCESS_TOKEN}}
-        path: flux-repo
-        ref: main
-
-    - name: install-sops
+        secrets: |-
+          token:k8s-k3s-386219/tele-token
+    - name: get secret
       run: |
-        curl -O -L -C - https://github.com/mozilla/sops/releases/download/v3.7.3/sops-v3.7.3.linux
-        sudo mv sops-v3.7.3.linux /usr/bin/sops
-        sudo chmod +x /usr/bin/sops
+        echo test token: ${{ steps.secrets.outputs.token }}
 
-    - name: yq 
-      uses: mikefarah/yq@master
-      with:
-        cmd: yq -i '.data.token="${{secrets.TELE_TOKEN}}"' helm/secret-template.yaml
 
-    - name: 'sops-ecnrypt'
-      run: |
-        cat helm/secret-template.yaml
-        cat helm/secret-template.yaml | sops -e -gcp-kms ${{env.KMS_CRYPTO_KEY}} --encrypted-regex '^(token)$' --input-type yaml --output-type yaml /dev/stdin > helm/secret-enc.yaml
-        cat helm/secret-enc.yaml 
+    # - name: clone-flux-repo
+    #   uses: actions/checkout@v3
+    #   with:
+    #     repository: ${{env.FLUX_REPO}}
+    #     token: ${{secrets.ACCESS_TOKEN}}
+    #     path: flux-repo
+    #     ref: main
 
-    - name: push-secret
-      run: |
-        cd flux-repo/
-        cp ../helm/secret-enc.yaml clusters/demo/
-        cat clusters/demo/secret-enc.yaml
-        git config user.name github-actions
-        git config user.email github-actions@github.com
-        git add clusters/demo/secret-enc.yaml
-        git commit -m "update secret-enc.yaml"
-        git push
+    # - name: install-sops
+    #   run: |
+    #     curl -O -L -C - https://github.com/mozilla/sops/releases/download/v3.7.3/sops-v3.7.3.linux
+    #     sudo mv sops-v3.7.3.linux /usr/bin/sops
+    #     sudo chmod +x /usr/bin/sops
+
+    # - name: yq 
+    #   uses: mikefarah/yq@master
+    #   with:
+    #     cmd: yq -i '.data.token="${{secrets.TELE_TOKEN}}"' helm/secret-template.yaml
+
+    # - name: 'sops-ecnrypt'
+    #   run: |
+    #     cat helm/secret-template.yaml
+    #     cat helm/secret-template.yaml | sops -e -gcp-kms ${{env.KMS_CRYPTO_KEY}} --encrypted-regex '^(token)$' --input-type yaml --output-type yaml /dev/stdin > helm/secret-enc.yaml
+    #     cat helm/secret-enc.yaml 
+
+    # - name: push-secret
+    #   run: |
+    #     cd flux-repo/
+    #     cp ../helm/secret-enc.yaml clusters/demo/
+    #     cat clusters/demo/secret-enc.yaml
+    #     git config user.name github-actions
+    #     git config user.email github-actions@github.com
+    #     git add clusters/demo/secret-enc.yaml
+    #     git commit -m "update secret-enc.yaml"
+    #     git push
 
 
   # cd:

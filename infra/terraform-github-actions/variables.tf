@@ -8,3 +8,8 @@ variable "GOOGLE_REGION" {
   default     = "us-central1"
   description = "GCP region to use"
 }
+
+variable "TELE_TOKEN" {
+  type        = string
+  description = "kbot TELE_TOKEN"
+}
