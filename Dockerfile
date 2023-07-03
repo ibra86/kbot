@@ -1,7 +1,7 @@
 FROM golang:1.19 as builder
 WORKDIR /go/src/app
 COPY . .
-RUN make build
+RUN make build TARGETOS=linux TARGETARCH=amd64
 
 FROM scratch
 WORKDIR /

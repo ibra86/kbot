@@ -7,4 +7,3 @@ services:
       context: .
     environment:
       - TELE_TOKEN=${TELE_TOKEN_DEV}
-      - METRICS_HOST=collector:4317
