@@ -14,7 +14,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	// "github.com/hirosassa/zerodriver"
+	"github.com/hirosassa/zerodriver"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
@@ -86,6 +86,9 @@ func pmetrics(ctx context.Context, payload string) {
 	counter, _ := meter.Int64Counter(fmt.Sprintf("kbot_comand_%s", payload))
 	// Add a value of 1 to the Int64Counter
 	counter.Add(ctx, 1)
+
+	logger := zerodriver.NewProductionLogger()
+	logger.Debug().Str("Version", appVersion).Msg(fmt.Sprintf("add pmetrics event: %s", payload))
 }
 
 // kbotCmd represents the kbot command
@@ -100,18 +103,28 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		// log.Printf("kbot %s started. ", appVersion)
 		log.Printf("OtelHost env var: %s. ", OtelHost)
-		log.Printf("kbot %s started. ", appVersion)
 		// log.Printf("TeleToken env var: %s. ", TeleToken)
+
+		logger := zerodriver.NewProductionLogger()
 
 		kbot, err := telebot.NewBot(telebot.Settings{
 			URL:    "",
 			Token:  TeleToken,
 			Poller: &telebot.LongPoller{Timeout: 10 * time.Second},
 		})
+		// if err != nil {
+		// 	log.Fatalf("Please check TELE_TOKEN env variable. %s", err)
+		// 	return
+		// }
+
 		if err != nil {
-			log.Fatalf("Please check TELE_TOKEN env variable. %s", err)
+			logger.Fatal().Str("Error", err.Error()).Msg("Please check TELE_TOKEN env variable.")
 			return
+		} else {
+			logger.Info().Str("Version", appVersion).Msg("kbot started")
+
 		}
 
 		kbot.Handle(telebot.OnText, func(c telebot.Context) error {
@@ -122,7 +135,8 @@ to quickly create a Cobra application.`,
 			payload := c.Message().Payload
 
 			// log.Printf("message: %+v\n", c.Message())
-			log.Printf("payload: %s, text: %s\n", payload, inputText)
+			// log.Printf("payload: %s, text: %s\n", payload, inputText)
+			logger.Debug().Str("Version", appVersion).Msg(fmt.Sprintf("payload: %s, text: %s\n", payload, inputText))
 
 			if !strings.HasPrefix(inputText, command) {
 				payload = "errorCommand"
