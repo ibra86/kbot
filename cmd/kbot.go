@@ -88,7 +88,7 @@ func pmetrics(ctx context.Context, payload string) {
 	counter.Add(ctx, 1)
 
 	logger := zerodriver.NewProductionLogger()
-	logger.Debug().Str("Version", appVersion).Msg(fmt.Sprintf("add pmetrics event: %s", payload))
+	logger.Info().Str("Version", appVersion).Msg(fmt.Sprintf("add pmetrics event: %s", payload))
 }
 
 // kbotCmd represents the kbot command
@@ -136,7 +136,7 @@ to quickly create a Cobra application.`,
 
 			// log.Printf("message: %+v\n", c.Message())
 			// log.Printf("payload: %s, text: %s\n", payload, inputText)
-			logger.Debug().Str("Version", appVersion).Msg(fmt.Sprintf("payload: %s, text: %s\n", payload, inputText))
+			logger.Info().Str("Version", appVersion).Msg(fmt.Sprintf("payload: %s, text: %s\n", payload, inputText))
 
 			if !strings.HasPrefix(inputText, command) {
 				payload = "errorCommand"
