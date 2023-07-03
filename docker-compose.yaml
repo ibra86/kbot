@@ -11,7 +11,6 @@ services:
       - OTEL_HOST=collector:4317
       - TELE_TOKEN=${TELE_TOKEN_DEV}
 
-  # OTEL contrib collector for Laki
   collector:
     image: otel/opentelemetry-collector-contrib:0.78.0
     command: [--config=/etc/otel-collector-config.yaml]
@@ -19,6 +18,16 @@ services:
       - ./otel/collector/otel-collector-contrib.yaml:/etc/otel-collector-config.yaml 
     ports:
       - 4317:4317
+
+  loki:
+    image: grafana/loki:2.8.2
+    command: 
+      - -config.file=/etc/loki/local-config.yaml
+      - -log.level=error
+    volumes:
+      - ./otel/loki/loki-local-config.yaml:/etc/loki/local-config.yaml
+    ports:
+      - "3100:3100"
 
   # Prom
   # prometheus:
@@ -58,16 +67,6 @@ services:
   #   ports:
   #     - "3002:3002"
 
-  # # Loki
-  # loki:
-  #   image: grafana/loki:2.8.2
-  #   command: 
-  #     - -config.file=/etc/loki/local-config.yaml
-  #     - -log.level=error
-  #   volumes:
-  #     - ./loki/loki-local-config.yaml:/etc/loki/local-config.yaml
-  #   ports:
-  #     - "3100:3100"
   
   # tempo:
   #   image: grafana/tempo:1.1.0
