@@ -2,13 +2,13 @@ apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   creationTimestamp: null
-  name: otel-default
+  name: kbot-default
 spec:
   ingress:
     - from:
         - podSelector:
             matchLabels:
-              io.kompose.network/otel-default: "true"
+              io.kompose.network/kbot-default: "true"
   podSelector:
     matchLabels:
-      io.kompose.network/otel-default: "true"
+      io.kompose.network/kbot-default: "true"

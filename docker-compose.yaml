@@ -4,9 +4,10 @@ services:
 
   # Kbot
   kbot:
-    build:
-      dockerfile: Dockerfile
-      context: .
+    image: ibra86dspl/kbot:v1.1.0-fb2d4c0-linux-amd64
+    # build:
+    #   dockerfile: Dockerfile
+    #   context: .
     environment:
       - OTEL_HOST=collector:4317
       - TELE_TOKEN=${TELE_TOKEN_DEV}

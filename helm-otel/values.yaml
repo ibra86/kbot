@@ -1,0 +1,15 @@
+image:
+  name: kbot
+  repository: ibra86dspl
+  tag: v1.1.0-fb2d4c0
+  os: linux
+  arch: amd64
+secret:
+  env: TELE_TOKEN
+  key: token
+  name: kbot
+autoscaling:
+  enabled: false
+replicaCount: 1
+service:
+  port: 80
