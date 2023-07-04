@@ -86,8 +86,8 @@ func pmetrics(ctx context.Context, payload string) {
 	// Add a value of 1 to the Int64Counter
 	counter.Add(ctx, 1)
 
-	logger := zerodriver.NewProductionLogger()
-	logger.Info().Str("Version", appVersion).Msg(fmt.Sprintf("add pmetrics event: %s", payload))
+	// logger := zerodriver.NewProductionLogger()
+	// logger.Info().Str("Version", appVersion).Msg(fmt.Sprintf("add pmetrics event: %s", payload))
 }
 
 // kbotCmd represents the kbot command
