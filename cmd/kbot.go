@@ -6,7 +6,6 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"log"
 	"math/rand"
 	"os"
 	"strings"
@@ -103,9 +102,6 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		// log.Printf("kbot %s started. ", appVersion)
-		log.Printf("OtelHost env var: %s. ", OtelHost)
-		// log.Printf("TeleToken env var: %s. ", TeleToken)
 
 		logger := zerodriver.NewProductionLogger()
 
@@ -114,10 +110,6 @@ to quickly create a Cobra application.`,
 			Token:  TeleToken,
 			Poller: &telebot.LongPoller{Timeout: 10 * time.Second},
 		})
-		// if err != nil {
-		// 	log.Fatalf("Please check TELE_TOKEN env variable. %s", err)
-		// 	return
-		// }
 
 		if err != nil {
 			logger.Fatal().Str("Error", err.Error()).Msg("Please check TELE_TOKEN env variable.")
@@ -134,8 +126,6 @@ to quickly create a Cobra application.`,
 			inputText := c.Text()
 			payload := c.Message().Payload
 
-			// log.Printf("message: %+v\n", c.Message())
-			// log.Printf("payload: %s, text: %s\n", payload, inputText)
 			logger.Info().Str("Version", appVersion).Msg(fmt.Sprintf("payload: %s, text: %s\n", payload, inputText))
 
 			if !strings.HasPrefix(inputText, command) {
