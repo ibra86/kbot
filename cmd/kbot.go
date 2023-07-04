@@ -36,22 +36,25 @@ var (
 
 func initMetrics(ctx context.Context) {
 
-	metricExp, _ := otlpmetricgrpc.New(
+	// grpc exporter with endpoint and potions
+	metricExporter, _ := otlpmetricgrpc.New(
 		ctx,
 		otlpmetricgrpc.WithInsecure(),
 		otlpmetricgrpc.WithEndpoint(OtelHost),
 	)
 
+	//resource with attribute common to all metrics
 	resource := resource.NewWithAttributes(
 		semconv.SchemaURL,
 		semconv.ServiceNameKey.String(fmt.Sprintf("kbot_%s", appVersion)),
 	)
 
+	// meterProvider with resource and reader - interface to create metrics
 	meterProvider := sdkmetric.NewMeterProvider(
 		sdkmetric.WithResource(resource),
 		sdkmetric.WithReader(
 			sdkmetric.NewPeriodicReader(
-				metricExp,
+				metricExporter,
 				sdkmetric.WithInterval(10*time.Second)), // collects and exports metric data every 10 seconds.
 		),
 	)
@@ -80,9 +83,11 @@ func initMetrics(ctx context.Context) {
 
 }
 
+// collection metrics function
 func pmetrics(ctx context.Context, payload string) {
+	// get global meterProvider and create a new Meter
 	meter := otel.GetMeterProvider().Meter("kbot_command_counter")
-	counter, _ := meter.Int64Counter(fmt.Sprintf("kbot_comand_%s", payload))
+	counter, _ := meter.Int64Counter(fmt.Sprintf("kbot_command_%s", payload))
 	// Add a value of 1 to the Int64Counter
 	counter.Add(ctx, 1)
 
@@ -167,5 +172,6 @@ to quickly create a Cobra application.`,
 func init() {
 	ctx := context.Background()
 	initMetrics(ctx)
+	// initTraces(ctx)
 	rootCmd.AddCommand(kbotCmd)
 }
