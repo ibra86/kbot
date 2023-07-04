@@ -20,11 +20,11 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
 
-	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
-	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
-	"go.opentelemetry.io/otel/propagation"
-	sdktrace "go.opentelemetry.io/otel/sdk/trace"
-	"google.golang.org/grpc"
+	// "go.opentelemetry.io/otel/exporters/otlp/otlptrace"
+	// "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
+	// "go.opentelemetry.io/otel/propagation"
+	// sdktrace "go.opentelemetry.io/otel/sdk/trace"
+	// "google.golang.org/grpc"
 
 	telebot "gopkg.in/telebot.v3"
 )
@@ -59,24 +59,24 @@ func initMetrics(ctx context.Context) {
 	// Set the global MeterProvider to the newly created MeterProvider
 	otel.SetMeterProvider(meterProvider)
 
-	traceClient := otlptracegrpc.NewClient(
-		otlptracegrpc.WithInsecure(),
-		otlptracegrpc.WithEndpoint(OtelHost),
-		otlptracegrpc.WithDialOption(grpc.WithBlock()))
-	sctx, cancel := context.WithTimeout(ctx, time.Second)
-	defer cancel()
-	traceExp, _ := otlptrace.New(sctx, traceClient)
+	// traceClient := otlptracegrpc.NewClient(
+	// 	otlptracegrpc.WithInsecure(),
+	// 	otlptracegrpc.WithEndpoint(OtelHost),
+	// 	otlptracegrpc.WithDialOption(grpc.WithBlock()))
+	// sctx, cancel := context.WithTimeout(ctx, time.Second)
+	// defer cancel()
+	// traceExp, _ := otlptrace.New(sctx, traceClient)
 
-	bsp := sdktrace.NewBatchSpanProcessor(traceExp)
-	tracerProvider := sdktrace.NewTracerProvider(
-		sdktrace.WithSampler(sdktrace.AlwaysSample()),
-		sdktrace.WithResource(resource),
-		sdktrace.WithSpanProcessor(bsp),
-	)
+	// bsp := sdktrace.NewBatchSpanProcessor(traceExp)
+	// tracerProvider := sdktrace.NewTracerProvider(
+	// 	sdktrace.WithSampler(sdktrace.AlwaysSample()),
+	// 	sdktrace.WithResource(resource),
+	// 	sdktrace.WithSpanProcessor(bsp),
+	// )
 
-	// set global propagator to tracecontext (the default is no-op).
-	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
-	otel.SetTracerProvider(tracerProvider)
+	// // set global propagator to tracecontext (the default is no-op).
+	// otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
+	// otel.SetTracerProvider(tracerProvider)
 
 }
 
