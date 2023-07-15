@@ -2,41 +2,66 @@ receivers:
   otlp:
     protocols:
       grpc:
-      # http:
-      #   endpoint: "0.0.0.0:3030"
+      http:
 
 exporters:
   logging:
-#   loki:
-#     endpoint: http://loki:3100/loki/api/v1/push
-#   prometheus:
-#     endpoint: "0.0.0.0:8889"
-#   otlp:
-#     endpoint: tempo:4317
-#     tls:
-#       insecure: true
-  # jaeger:
-  #   endpoint: jaeger:14250
-  #   insecure: true
-  # otlp:
-  #   endpoint: localhost:14250
-  #   insecure: true
-  #   sending_queue:
-  #     num_consumers: 4
-  #     queue_size: 100
-  #   retry_on_failure:
-  #     enabled: true
+  file:
+    path: /etc/otelcol_data_traces.log
 
 service:
+
   pipelines:
-    logs:
-      receivers: [otlp]
-      exporters: [loki]
-    traces:
-      receivers: [otlp]
-      # exporters: [logging]
-      exporters: [logging, otlp]
-      # exporters: [logging, jaeger]
+
     metrics:
       receivers: [otlp]
-      exporters: [logging,prometheus]
+      exporters: [logging]
+
+    traces:
+      receivers: [otlp]
+      exporters: [file]
+
+
+# receivers:
+#   otlp:
+#     protocols:
+#       grpc:
+#       # http:
+#       #   endpoint: "0.0.0.0:3030"
+
+# exporters:
+#   logging:
+# #   loki:
+# #     endpoint: http://loki:3100/loki/api/v1/push
+# #   prometheus:
+# #     endpoint: "0.0.0.0:8889"
+# #   otlp:
+# #     endpoint: tempo:4317
+# #     tls:
+# #       insecure: true
+#   # jaeger:
+#   #   endpoint: jaeger:14250
+#   #   insecure: true
+#   # otlp:
+#   #   endpoint: localhost:14250
+#   #   insecure: true
+#   #   sending_queue:
+#   #     num_consumers: 4
+#   #     queue_size: 100
+#   #   retry_on_failure:
+#   #     enabled: true
+
+# service:
+#   pipelines:
+#     logs:
+#       receivers: [otlp]
+#       exporters: [loki]
+#     traces:
+#       receivers: [otlp]
+#       # exporters: [logging]
+#       exporters: [logging, otlp]
+#       # exporters: [logging, jaeger]
+#     metrics:
+#       receivers: [otlp]
+#       exporters: [logging]
+#       # exporters: [logging,prometheus]

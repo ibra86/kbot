@@ -40,14 +40,24 @@ var (
 	appName   = fmt.Sprintf("kbot_%s", appVersion)
 )
 
+func handleErr(err error, message string) {
+	logger := zerodriver.NewProductionLogger()
+	if err != nil {
+		logger.Fatal().Str("Error", err.Error()).Msgf("%s: %v", message, err)
+		// log.Fatalf("%s: %v", message, err)
+	}
+}
+
 func initMetrics(ctx context.Context) {
 
 	// grpc exporter with endpoint and potions
-	metricExporter, _ := otlpmetricgrpc.New(
+	metricExporter, err := otlpmetricgrpc.New(
 		ctx,
 		otlpmetricgrpc.WithInsecure(),
 		otlpmetricgrpc.WithEndpoint(OtelHost),
 	)
+
+	handleErr(err, "failed to create metricExporter")
 
 	//resource with attribute common to all metrics
 	resource := resource.NewWithAttributes(
@@ -141,6 +151,11 @@ to quickly create a Cobra application.`,
 			Token:  TeleToken,
 			Poller: &telebot.LongPoller{Timeout: 10 * time.Second},
 		})
+
+		// logger.Info()
+		// logger.Info().Str("str_test", appVersion)
+		// logger.Info().Msg("msg_test")
+		// logger.Info().TraceContext("traceId", "spanId", true, appName).Msg("trace contexts")
 
 		if err != nil {
 			logger.Fatal().Str("Error", err.Error()).Msg("Please check TELE_TOKEN env variable.")
