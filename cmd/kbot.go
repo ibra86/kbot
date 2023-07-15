@@ -20,10 +20,15 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
 
-	// "go.opentelemetry.io/otel/exporters/otlp/otlptrace"
-	// "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
+
 	// "go.opentelemetry.io/otel/propagation"
-	// sdktrace "go.opentelemetry.io/otel/sdk/trace"
+	"go.opentelemetry.io/otel/attribute"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+
+	// "go.opentelemetry.io/otel/trace"
+
 	// "google.golang.org/grpc"
 
 	telebot "gopkg.in/telebot.v3"
@@ -32,6 +37,7 @@ import (
 var (
 	TeleToken = os.Getenv("TELE_TOKEN")
 	OtelHost  = os.Getenv("OTEL_HOST")
+	appName   = fmt.Sprintf("kbot_%s", appVersion)
 )
 
 func initMetrics(ctx context.Context) {
@@ -46,7 +52,7 @@ func initMetrics(ctx context.Context) {
 	//resource with attribute common to all metrics
 	resource := resource.NewWithAttributes(
 		semconv.SchemaURL,
-		semconv.ServiceNameKey.String(fmt.Sprintf("kbot_%s", appVersion)),
+		semconv.ServiceNameKey.String(appName),
 	)
 
 	// meterProvider with resource and reader - interface to create metrics
@@ -61,26 +67,6 @@ func initMetrics(ctx context.Context) {
 
 	// Set the global MeterProvider to the newly created MeterProvider
 	otel.SetMeterProvider(meterProvider)
-
-	// traceClient := otlptracegrpc.NewClient(
-	// 	otlptracegrpc.WithInsecure(),
-	// 	otlptracegrpc.WithEndpoint(OtelHost),
-	// 	otlptracegrpc.WithDialOption(grpc.WithBlock()))
-	// sctx, cancel := context.WithTimeout(ctx, time.Second)
-	// defer cancel()
-	// traceExp, _ := otlptrace.New(sctx, traceClient)
-
-	// bsp := sdktrace.NewBatchSpanProcessor(traceExp)
-	// tracerProvider := sdktrace.NewTracerProvider(
-	// 	sdktrace.WithSampler(sdktrace.AlwaysSample()),
-	// 	sdktrace.WithResource(resource),
-	// 	sdktrace.WithSpanProcessor(bsp),
-	// )
-
-	// // set global propagator to tracecontext (the default is no-op).
-	// otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
-	// otel.SetTracerProvider(tracerProvider)
-
 }
 
 // collection metrics function
@@ -91,8 +77,48 @@ func pmetrics(ctx context.Context, payload string) {
 	// Add a value of 1 to the Int64Counter
 	counter.Add(ctx, 1)
 
-	// logger := zerodriver.NewProductionLogger()
-	// logger.Info().Str("Version", appVersion).Msg(fmt.Sprintf("add pmetrics event: %s", payload))
+	logger := zerodriver.NewProductionLogger()
+	logger.Info().Str("Version", appVersion).Msgf("add pmetrics event: %s", payload)
+}
+
+func initTraces(ctx context.Context) {
+
+	traceClient := otlptracegrpc.NewClient(
+		otlptracegrpc.WithInsecure(),
+		otlptracegrpc.WithEndpoint(OtelHost),
+	)
+	traceExporter, _ := otlptrace.New(ctx, traceClient)
+
+	resource := resource.NewWithAttributes(
+		semconv.SchemaURL,
+		semconv.ServiceNameKey.String(appName),
+	)
+
+	traceProvider := sdktrace.NewTracerProvider(
+		sdktrace.WithResource(resource),
+		sdktrace.WithBatcher(traceExporter),
+	)
+	otel.SetTracerProvider(traceProvider)
+
+}
+
+func ptraces(ctx context.Context, payload string) {
+	tracer := otel.GetTracerProvider().Tracer("kbot_tracer")
+	_, span := tracer.Start(ctx, "tracing")
+	defer span.End()
+	traceId := span.SpanContext().TraceID().String()
+	spanId := span.SpanContext().SpanID().String()
+	span.SetAttributes(
+		attribute.String("traceId", traceId),
+		attribute.String("spanId", spanId),
+	)
+
+	// oteltrace
+	// otelSpan := trace.SpanFromContext(ctx)
+	// otelTraceID := otelSpan.SpanContext().TraceID().String()
+	logger := zerodriver.NewProductionLogger()
+	logger.Info().TraceContext(traceId, spanId, true, appName).Msg("trace contexts")
+
 }
 
 // kbotCmd represents the kbot command
@@ -126,16 +152,19 @@ to quickly create a Cobra application.`,
 
 		kbot.Handle(telebot.OnText, func(c telebot.Context) error {
 
+			ctx := context.Background()
 			command := "/get"
 
 			inputText := c.Text()
 			payload := c.Message().Payload
 
+			ptraces(ctx, payload)
+
 			logger.Info().Str("Version", appVersion).Msg(fmt.Sprintf("payload: %s, text: %s\n", payload, inputText))
 
 			if !strings.HasPrefix(inputText, command) {
 				payload = "errorCommand"
-				pmetrics(context.Background(), payload)
+				// pmetrics(ctx, payload)
 				err = c.Send("Usage: \n/get hello|time|number")
 				return err
 			}
@@ -159,7 +188,7 @@ to quickly create a Cobra application.`,
 				err = c.Send("Usage: \n/get hello|time|number")
 			}
 
-			pmetrics(context.Background(), payload)
+			pmetrics(ctx, payload)
 
 			return err
 		})
@@ -172,6 +201,6 @@ to quickly create a Cobra application.`,
 func init() {
 	ctx := context.Background()
 	initMetrics(ctx)
-	// initTraces(ctx)
+	initTraces(ctx)
 	rootCmd.AddCommand(kbotCmd)
 }

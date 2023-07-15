@@ -4,10 +4,10 @@ services:
 
   # Kbot
   kbot:
-    image: ibra86dspl/kbot:v1.1.0-fb2d4c0-linux-amd64
-    # build:
-    #   dockerfile: Dockerfile
-    #   context: .
+    # image: ibra86dspl/kbot:v1.1.0-fb2d4c0-linux-amd64
+    build:
+      dockerfile: Dockerfile
+      context: .
     environment:
       - OTEL_HOST=collector:4317
       - TELE_TOKEN=${TELE_TOKEN_DEV}
@@ -65,7 +65,18 @@ services:
     ports:
       - "3002:3002"
 
-  
+  tempo:
+    image: grafana/tempo:latest
+    command: [ "-config.file=/etc/tempo.yaml" ]
+    volumes:
+      - ../shared/tempo.yaml:/etc/tempo.yaml
+      - ./tempo-data:/tmp/tempo
+    ports:
+      - "14268"  # jaeger ingest
+      - "3200"   # tempo
+      - "4317"  # otlp grpc
+      - "4318"  # otlp http
+      - "9411"   # zipkin
   # tempo:
   #   image: grafana/tempo:1.1.0
   #   command:
