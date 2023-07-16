@@ -7,7 +7,7 @@ receivers:
 exporters:
   logging:
   file:
-    path: /etc/otelcol_data_traces.log
+    path: /etc/logs/otelcol_data_traces.log
 
 service:
 
