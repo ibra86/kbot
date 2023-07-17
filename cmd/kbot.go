@@ -6,6 +6,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"log"
 	"math/rand"
 	"os"
 	"strings"
@@ -87,8 +88,9 @@ func pmetrics(ctx context.Context, payload string) {
 	// Add a value of 1 to the Int64Counter
 	counter.Add(ctx, 1)
 
-	logger := zerodriver.NewProductionLogger()
-	logger.Info().Str("Version", appVersion).Msgf("add pmetrics event: %s", payload)
+	// logger := zerodriver.NewProductionLogger()
+	// logger.Info().Str("Version", appVersion).Msgf("add pmetrics event: %s", payload)
+	log.Printf("add pmetrics event: %s", payload)
 }
 
 func initTraces(ctx context.Context) {
@@ -126,8 +128,10 @@ func ptraces(ctx context.Context, payload string) {
 	// oteltrace
 	// otelSpan := trace.SpanFromContext(ctx)
 	// otelTraceID := otelSpan.SpanContext().TraceID().String()
-	logger := zerodriver.NewProductionLogger()
-	logger.Info().TraceContext(traceId, spanId, true, appName).Msg("trace contexts")
+
+	// logger := zerodriver.NewProductionLogger()
+	// logger.Info().TraceContext(traceId, spanId, true, appName).Msg("trace contexts")
+	log.Printf("add trace contexts (traceId, spanId): (%s, %s)", traceId, spanId)
 
 }
 
@@ -152,11 +156,6 @@ to quickly create a Cobra application.`,
 			Poller: &telebot.LongPoller{Timeout: 10 * time.Second},
 		})
 
-		// logger.Info()
-		// logger.Info().Str("str_test", appVersion)
-		// logger.Info().Msg("msg_test")
-		// logger.Info().TraceContext("traceId", "spanId", true, appName).Msg("trace contexts")
-
 		if err != nil {
 			logger.Fatal().Str("Error", err.Error()).Msg("Please check TELE_TOKEN env variable.")
 			return
@@ -175,7 +174,8 @@ to quickly create a Cobra application.`,
 
 			ptraces(ctx, payload)
 
-			logger.Info().Str("Version", appVersion).Msg(fmt.Sprintf("payload: %s, text: %s\n", payload, inputText))
+			// logger.Info().Str("Version", appVersion).Msg(fmt.Sprintf("payload: %s, text: %s\n", payload, inputText))
+			log.Printf("payload: %s, text: %s\n", payload, inputText)
 
 			if !strings.HasPrefix(inputText, command) {
 				payload = "errorCommand"
