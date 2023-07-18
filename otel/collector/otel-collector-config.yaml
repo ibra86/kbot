@@ -1,25 +1,37 @@
 receivers:
   otlp:
     protocols:
-      grpc:
-      http:
+      grpc: 
+        endpoint: "0.0.0.0:4317"
+      http: 
+        endpoint: "0.0.0.0:3030"
 
 exporters:
   logging:
+    verbosity: basic
   file:
-    path: /etc/logs/otelcol_data_traces.log
+    path: /etc/logs/otelcol_data.log
+  prometheus:  # monitoring metrics DB - Exports data in the Prometheus format, which allows it to be scraped by a Prometheus server.
+    endpoint: "0.0.0.0:8889"  # the address on which metrics will be exposed - metrics will be available at https://0.0.0.0:8889/metrics.
+
 
 service:
 
   pipelines:
 
+    logs:
+      receivers: [otlp]
+      exporters: [logging, file]
+
     metrics:
       receivers: [otlp]
-      exporters: [logging]
+      # exporters: [logging]
+      exporters: [logging, file, prometheus]
 
     traces:
       receivers: [otlp]
       exporters: [logging, file]
+      # exporters: [logging]
 
 
 # receivers:
