@@ -9,8 +9,8 @@ receivers:
 exporters:
   logging:
     verbosity: basic
-  file:
-    path: /etc/logs/otelcol_data.log
+  # file:
+  #   path: /etc/logs/otelcol_data.log
   prometheus:  # monitoring metrics DB - Exports data in the Prometheus format, which allows it to be scraped by a Prometheus server.
     endpoint: "0.0.0.0:8889"  # the address on which metrics will be exposed - metrics will be available at https://0.0.0.0:8889/metrics.
 
@@ -21,15 +21,15 @@ service:
 
     logs:
       receivers: [otlp]
-      exporters: [file]
+      exporters: [logging]
 
     metrics:
       receivers: [otlp]
-      exporters: [file, prometheus]
+      exporters: [logging, prometheus]
 
     traces:
       receivers: [otlp]
-      exporters: [file]
+      exporters: [logging]
 
 # exporters:
 #   logging:
