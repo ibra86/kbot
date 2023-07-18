@@ -19,6 +19,10 @@ exporters:
   #   path: /etc/logs/otelcol_data.log
   prometheus: # monitoring metrics DB - Exports data in the Prometheus format, which allows it to be scraped by a Prometheus server.
     endpoint: "0.0.0.0:8889" # the address on which metrics will be exposed - metrics will be available at https://0.0.0.0:8889/metrics.
+  otlp:
+    endpoint: tempo:4317
+    tls:
+      insecure: true
 
 service:
   pipelines:
@@ -32,7 +36,7 @@ service:
 
     traces:
       receivers: [otlp]
-      exporters: [logging]
+      exporters: [logging, otlp]
 # exporters:
 #   logging:
 # #   loki:
