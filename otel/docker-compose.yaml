@@ -35,7 +35,7 @@ services:
   grafana:
     image: grafana/grafana:9.4.3
     volumes:
-      - ./grafana/grafana-datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+      - ./grafana/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
     environment:
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
@@ -45,16 +45,16 @@ services:
     ports:
       - "3002:3002"
       
-  # fluentbit:
-  #   image: fluent/fluent-bit:latest
-  #   volumes:
-  #     - ./fluent-bit/docker-metadata.lua:/fluent-bit/bin/docker-metadata.lua
-  #     - ./fluent-bit/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf
-  #     - /var:/var
-  #     - /proc:/host/proc
-  #     - /sys:/host/sys
-  #   ports:
-  #     - "3001:3001"
+  fluentbit:
+    image: fluent/fluent-bit:latest
+    volumes:
+      - ./fluent-bit/docker-metadata.lua:/fluent-bit/bin/docker-metadata.lua
+      - ./fluent-bit/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf
+      - /var:/var
+      - /proc:/host/proc
+      - /sys:/host/sys
+    ports:
+      - "3001:3001"
 
   loki:
     image: grafana/loki:2.8.2
