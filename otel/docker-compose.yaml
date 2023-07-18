@@ -45,26 +45,26 @@ services:
     ports:
       - "3002:3002"
       
-  fluentbit:
-    image: fluent/fluent-bit:latest
-    volumes:
-      - ./fluent-bit/docker-metadata.lua:/fluent-bit/bin/docker-metadata.lua
-      - ./fluent-bit/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf
-      - /var:/var
-      - /proc:/host/proc
-      - /sys:/host/sys
-    ports:
-      - "3001:3001"
-
-  # loki:
-  #   image: grafana/loki:2.8.2
-  #   command: 
-  #     - -config.file=/etc/loki/local-config.yaml
-  #     - -log.level=error
+  # fluentbit:
+  #   image: fluent/fluent-bit:latest
   #   volumes:
-  #     - ./loki/loki-local-config.yaml:/etc/loki/local-config.yaml
+  #     - ./fluent-bit/docker-metadata.lua:/fluent-bit/bin/docker-metadata.lua
+  #     - ./fluent-bit/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf
+  #     - /var:/var
+  #     - /proc:/host/proc
+  #     - /sys:/host/sys
   #   ports:
-  #     - "3100:3100"
+  #     - "3001:3001"
+
+  loki:
+    image: grafana/loki:2.8.2
+    command: 
+      - -config.file=/etc/loki/local-config.yaml
+      - -log.level=error
+    volumes:
+      - ./loki/loki-local-config.yaml:/etc/loki/local-config.yaml
+    ports:
+      - "3100:3100"
   
   # tempo:
   #   image: grafana/tempo:latest
