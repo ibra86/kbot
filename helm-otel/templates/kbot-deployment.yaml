@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -c -o helm-otel
+    kompose.version: 1.28.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: kbot
+  name: kbot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: kbot
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -c -o helm-otel
+        kompose.version: 1.28.0 (HEAD)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/kbot-default: "true"
+        io.kompose.service: kbot
+    spec:
+      containers:
+        - name: {{ .Release.Name }}
+          image: {{ .Values.image.repository }}/{{ .Values.image.name }}:{{ .Values.image.tag }}-{{ .Values.image.os | default "linux"}}-{{ .Values.image.arch | default "amd64"}}
+          env:
+            - name: {{ .Values.secret.env }}
+              valueFrom: 
+                secretKeyRef:
+                  key: {{ .Values.secret.key }}
+                  name: {{ .Values.secret.name }}
+            - name: OTEL_HOST
+              value: collector:4317
+          resources: {}
+      restartPolicy: Always
+status: {}

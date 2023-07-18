@@ -17,7 +17,7 @@ go build -ldflags "-X="github.com/ibra86/kbot/cmd.appVersion=<your-app-version>
 
 Build a makefile with (default os is linux, architecture is arm64)
 ```sh
-make <action> [TARGETOS=darwin] [TARGETARCH=amd64]
+make <action> [TARGETOS=darwin] [TARGETARCH=arm64]
 ```
 
 
@@ -25,6 +25,9 @@ make <action> [TARGETOS=darwin] [TARGETARCH=amd64]
 
 ```sh
 ./kbot start
+```
+```sh
+make start TARGETOS=darwin TARGETARCH=arm64
 ```
 
 This will start the Kbot command and connect it to your Telegram bot. Kbot will listen for messages sent to your bot and respond to them based on the specified command.
