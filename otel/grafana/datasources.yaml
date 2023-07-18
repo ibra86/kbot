@@ -52,20 +52,3 @@ datasources:
       tags: ['job', 'instance', 'pod', 'namespace']
     serviceMap:
       datasourceUid: prometheus
-  # jsonData:
-  #   httpMethod: GET
-  #   serviceMap:
-  #     datasourceUid: prometheus
-# - name: Tempo
-#   type: tempo
-#   uid: tempo
-#   url: http://tempo/
-#   access: proxy
-#   editable: true
-#   isDefault: false
-#   jsonData:
-#     httpMethod: GET
-#     tracesToLogs:
-#       datasourceUid: 'loki'
-#       tags: ['job', 'instance', 'pod', 'namespace']
-#   version: 1

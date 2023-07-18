@@ -6,17 +6,11 @@ receivers:
       http:
         endpoint: "0.0.0.0:3030"
 
-# Traces: "http://my-api-endpoint/v1/traces"
-# Metrics: "http://my-api-endpoint/v1/metrics"
-# Logs: "http://my-api-endpoint/v1/logs"
-
 exporters:
   logging:
     verbosity: basic
   loki: # Like Prometheus, but for logs
     endpoint: http://loki:3100/loki/api/v1/push # The target URL to send Loki log streams to
-  # file:
-  #   path: /etc/logs/otelcol_data.log
   prometheus: # monitoring metrics DB - Exports data in the Prometheus format, which allows it to be scraped by a Prometheus server.
     endpoint: "0.0.0.0:8889" # the address on which metrics will be exposed - metrics will be available at https://0.0.0.0:8889/metrics.
   otlp:
@@ -37,24 +31,7 @@ service:
     traces:
       receivers: [otlp]
       exporters: [logging, otlp]
-# exporters:
-#   logging:
-# #   loki:
-# #     endpoint: http://loki:3100/loki/api/v1/push
-# #   prometheus:
-# #     endpoint: "0.0.0.0:8889"
-# #   otlp:
-# #     endpoint: tempo:4317
-# #     tls:
-# #       insecure: true
-#   # jaeger:
-#   #   endpoint: jaeger:14250
-#   #   insecure: true
-#   # otlp:
-#   #   endpoint: localhost:14250
-#   #   insecure: true
-#   #   sending_queue:
-#   #     num_consumers: 4
-#   #     queue_size: 100
-#   #   retry_on_failure:
-#   #     enabled: true
+
+# Logs: "http://endpoint/v1/logs"
+# Metrics: "http://endpoint/v1/metrics"
+# Traces: "http://endpoint/v1/traces"

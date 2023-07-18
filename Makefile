@@ -2,7 +2,7 @@ APP=$(shell basename $(shell git remote get-url origin) | sed 's/\.git$$//')
 REGISTRY=ghcr.io/ibra86#ibra86dspl #ghcr.io/ibra86 
 VERSION=$(shell git describe --tags --abbrev=0)-$(shell git rev-parse --short HEAD)
 TARGETOS=linux# darwin windows
-TARGETARCH=amd64# ard64
+TARGETARCH=amd64# arm64
 
 get:
 	go get
