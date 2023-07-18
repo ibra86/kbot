@@ -8,11 +8,11 @@ on:
 env:
   CONTAINER_REGISTRY: ghcr.io
   CONTATINER_REGISTRY_USERNAME: ibra86
-  GCP_SECRET_ID: k8s-k3s-386219/tele-token
-  SERVICE_ACCOUNT: github-actions-sa-2@k8s-k3s-386219.iam.gserviceaccount.com
-  KMS_CRYPTO_KEY: projects/k8s-k3s-386219/locations/global/keyRings/sops-flux-2/cryptoKeys/sops-key-flux
-  WORKLOAD_IDENTITY_PROVIDER: projects/309987332695/locations/global/workloadIdentityPools/sops-pool-2/providers/sops-wip-provider-2
-  FLUX_REPO: ibra86/flux-sops-gitops
+  # GCP_SECRET_ID: k8s-k3s-386219/tele-token
+  # SERVICE_ACCOUNT: github-actions-sa-2@k8s-k3s-386219.iam.gserviceaccount.com
+  # KMS_CRYPTO_KEY: projects/k8s-k3s-386219/locations/global/keyRings/sops-flux-2/cryptoKeys/sops-key-flux
+  # WORKLOAD_IDENTITY_PROVIDER: projects/309987332695/locations/global/workloadIdentityPools/sops-pool-2/providers/sops-wip-provider-2
+  # FLUX_REPO: ibra86/flux-sops-gitops
 
 jobs:
   ci:
@@ -40,63 +40,63 @@ jobs:
           REGISTRY: ${{env.CONTAINER_REGISTRY}}/${{env.CONTATINER_REGISTRY_USERNAME}}
         run: make image push REGISTRY=$REGISTRY
 
-  sops:
-    name: SOPS
-    needs: ci
-    runs-on: ubuntu-latest
-    # Add "id-token" with the intended permissions for google service account.
-    permissions:
-      id-token: 'write'
+  # sops:
+  #   name: SOPS
+  #   needs: ci
+  #   runs-on: ubuntu-latest
+  #   # Add "id-token" with the intended permissions for google service account.
+  #   permissions:
+  #     id-token: 'write'
 
-    steps:
-    - uses: 'actions/checkout@v3'
-    - uses: 'google-github-actions/auth@v1'
-      with:
-        workload_identity_provider: ${{env.WORKLOAD_IDENTITY_PROVIDER}}
-        service_account: ${{env.SERVICE_ACCOUNT}}
+  #   steps:
+  #   - uses: 'actions/checkout@v3'
+  #   - uses: 'google-github-actions/auth@v1'
+  #     with:
+  #       workload_identity_provider: ${{env.WORKLOAD_IDENTITY_PROVIDER}}
+  #       service_account: ${{env.SERVICE_ACCOUNT}}
 
-    - id: secrets
-      uses: 'google-github-actions/get-secretmanager-secrets@v1'
-      with:
-        secrets: |-
-          token:${{env.GCP_SECRET_ID}}
+  #   - id: secrets
+  #     uses: 'google-github-actions/get-secretmanager-secrets@v1'
+  #     with:
+  #       secrets: |-
+  #         token:${{env.GCP_SECRET_ID}}
           
-    - name: clone-flux-repo
-      uses: actions/checkout@v3
-      with:
-        repository: ${{env.FLUX_REPO}}
-        token: ${{ secrets.ACCESS_TOKEN }}
-        path: flux-repo
-        ref: main
+  #   - name: clone-flux-repo
+  #     uses: actions/checkout@v3
+  #     with:
+  #       repository: ${{env.FLUX_REPO}}
+  #       token: ${{ secrets.ACCESS_TOKEN }}
+  #       path: flux-repo
+  #       ref: main
 
-    - name: install-sops
-      run: |
-        curl -O -L -C - https://github.com/mozilla/sops/releases/download/v3.7.3/sops-v3.7.3.linux
-        sudo mv sops-v3.7.3.linux /usr/bin/sops
-        sudo chmod +x /usr/bin/sops
+  #   - name: install-sops
+  #     run: |
+  #       curl -O -L -C - https://github.com/mozilla/sops/releases/download/v3.7.3/sops-v3.7.3.linux
+  #       sudo mv sops-v3.7.3.linux /usr/bin/sops
+  #       sudo chmod +x /usr/bin/sops
 
-    - name: yq 
-      uses: mikefarah/yq@master
-      with:
-        cmd: yq -i '.data.token="${{ steps.secrets.outputs.token }}"' helm/secret-template.yaml
+  #   - name: yq 
+  #     uses: mikefarah/yq@master
+  #     with:
+  #       cmd: yq -i '.data.token="${{ steps.secrets.outputs.token }}"' helm/secret-template.yaml
 
-    - name: 'sops-ecnrypt'
-      run: |
-        cat helm/secret-template.yaml | sops -e -gcp-kms ${{env.KMS_CRYPTO_KEY}} --encrypted-regex '^(token)$' --input-type yaml --output-type yaml /dev/stdin > helm/secret-enc.yaml
+  #   - name: 'sops-ecnrypt'
+  #     run: |
+  #       cat helm/secret-template.yaml | sops -e -gcp-kms ${{env.KMS_CRYPTO_KEY}} --encrypted-regex '^(token)$' --input-type yaml --output-type yaml /dev/stdin > helm/secret-enc.yaml
 
-    - name: push-secret
-      run: |
-        cd flux-repo/
-        cp ../helm/secret-enc.yaml clusters/demo/
-        git config user.name github-actions
-        git config user.email github-actions@github.com
-        git add clusters/demo/secret-enc.yaml
-        git commit -m "update secret-enc.yaml"
-        git push
+  #   - name: push-secret
+  #     run: |
+  #       cd flux-repo/
+  #       cp ../helm/secret-enc.yaml clusters/demo/
+  #       git config user.name github-actions
+  #       git config user.email github-actions@github.com
+  #       git add clusters/demo/secret-enc.yaml
+  #       git commit -m "update secret-enc.yaml"
+  #       git push
         
   cd:
     name: CD
-    needs: [ci, sops]
+    needs: ci
     runs-on: ubuntu-latest
 
     steps:
