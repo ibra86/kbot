@@ -2,9 +2,9 @@ receivers:
   otlp:
     protocols:
       grpc:
-        endpoint: "0.0.0.0:4317"
+        endpoint: ${env:MY_POD_IP}:4317
       http:
-        endpoint: "0.0.0.0:3030"
+        endpoint: ${env:MY_POD_IP}:3030
 
 exporters:
   logging:
@@ -12,7 +12,7 @@ exporters:
   # loki: # Like Prometheus, but for logs
   #   endpoint: http://loki:3100/loki/api/v1/push # The target URL to send Loki log streams to
   prometheus: # monitoring metrics DB - Exports data in the Prometheus format, which allows it to be scraped by a Prometheus server.
-    endpoint: "0.0.0.0:8889" # the address on which metrics will be exposed - metrics will be available at https://0.0.0.0:8889/metrics.
+    endpoint: otel-collector:8889 # the address on which metrics will be exposed - metrics will be available at https://0.0.0.0:8889/metrics.
   # otlp:
   #   endpoint: tempo:4317
   #   tls:
@@ -27,8 +27,8 @@ service:
 
     metrics:
       receivers: [otlp]
-      # exporters: [logging]
-      exporters: [logging, prometheus]
+      exporters: [logging]
+      # exporters: [logging, prometheus]
 
     traces:
       receivers: [otlp]

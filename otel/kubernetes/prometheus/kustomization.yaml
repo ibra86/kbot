@@ -3,7 +3,8 @@ kind: Kustomization
 
 resources:
   - deployment.yaml
+  - service.yaml
 configMapGenerator:
-  - name: config-cm
+  - name: prometheus-conf
     files:
       - prometheus-config.yaml

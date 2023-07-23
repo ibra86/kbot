@@ -16,7 +16,7 @@ spec:
           name: kbot
           env:
             - name: OTEL_HOST
-              value: collector:4317
+              value: otel-collector:4317
             - name: TELE_TOKEN
               valueFrom:
                 secretKeyRef:

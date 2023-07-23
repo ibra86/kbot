@@ -1,27 +1,39 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: collector
+  name: otel-collector
+  labels:
+    app: opentelemetry
+    component: otel-collector
 spec:
   selector:
     matchLabels:
-      app: collector
+      app: opentelemetry
+      component: otel-collector
   template:
     metadata:
       labels:
-        app: collector
+        app: opentelemetry
+        component: otel-collector
     spec:
       containers:
-        - name: collector
+        - args:
+            - "--config=/etc/otel-collector-config.yaml"
           image: otel/opentelemetry-collector-contrib:0.78.0
-          command: ["--config=/etc/otel-collector-config.yaml"]
-          volumeMounts:
-            - name: config-volume
-              mountPath: /etc/otel-collector-config.yaml
-              subPath: otel-collector-config.yaml
+          name: otel-collector
           ports:
-            - containerPort: 4317
+            - containerPort: 4317 # Default endpoint for OpenTelemetry receiver.
+            - containerPort: 8889 # Default endpoint for querying metrics.
+          env:
+            - name: MY_POD_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.podIP
+          volumeMounts:
+            - name: otel-collector-config-vol
+              mountPath: /etc
       volumes:
-        - name: config-volume
-          configMap:
-            name: config-cm
+        - configMap:
+            name: otel-collector-conf
+          name: otel-collector-config-vol

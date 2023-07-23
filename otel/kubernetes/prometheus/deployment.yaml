@@ -2,28 +2,35 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: prometheus
+  labels:
+    app: opentelemetry
+    component: prometheus
 spec:
   selector:
     matchLabels:
-      app: prometheus
+      app: opentelemetry
+      component: prometheus
   template:
     metadata:
       labels:
-        app: prometheus
+        app: opentelemetry
+        component: prometheus
     spec:
       containers:
         - name: prometheus
           image: prom/prometheus:latest
-          command:
-            - --config.file=/etc/prometheus.yaml
+          args:
+            - --config.file=/etc/prometheus/prometheus-config.yaml
             - --web.enable-remote-write-receiver
             - --enable-feature=exemplar-storage
           volumeMounts:
-            - name: config-volume
-              mountPath: /etc/prometheus.yaml
+            - name: prometheus-config-vol
+              mountPath: /etc/prometheus/
           ports:
             - containerPort: 9090
       volumes:
-        - name: config-volume
-          configMap:
-            name: config-cm
+        - configMap:
+            defaultMode: 420
+            name: prometheus-conf
+          name: prometheus-config-vol
+          

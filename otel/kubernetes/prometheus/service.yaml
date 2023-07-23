@@ -1,11 +1,15 @@
+---
 apiVersion: v1
 kind: Service
 metadata:
   name: prometheus
+  labels:
+    app: opentelemetry
+    component: prometheus
 spec:
-  selector:
-    app: prometheus
   ports:
-    - protocol: TCP
-      port: 9090
-      targetPort: 9090
+  - port: 9090
+    protocol: TCP
+    targetPort: 9090
+  selector:
+    component: prometheus
