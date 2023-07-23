@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kbot
+spec:
+  selector:
+    matchLabels:
+      app: kbot
+  template:
+    metadata:
+      labels:
+        app: kbot
+    spec:
+      containers:
+        - image: ibra86dspl/kbot:v1.1.0-5ccad31-linux-amd64
+          name: kbot
+          env:
+            - name: OTEL_HOST
+              value: collector:4317
+            - name: TELE_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  key: token
+                  name: kbot

@@ -5,4 +5,5 @@ terraform.tfstate*
 .DS_Store
 kind-cluster-config
 kbot
-otel/collector/logs
+arx
+

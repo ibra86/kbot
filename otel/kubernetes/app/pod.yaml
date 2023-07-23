@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kbot-pod
+spec:
+  containers:
+  - image: ibra86dspl/kbot:v1.1.0-5ccad31-linux-amd64
+    name: kbot-2
+    env:
+      - name: OTEL_HOST
+        value: collector
+      - name: TELE_TOKEN
+        valueFrom: 
+          secretKeyRef:
+            key: token
+            name: kbot

@@ -1,0 +1,663 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -o kubernetes
+    kompose.version: 1.28.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: collector
+  name: collector
+spec:
+  ports:
+    - name: "4317"
+      port: 4317
+      targetPort: 4317
+  selector:
+    io.kompose.service: collector
+status:
+  loadBalancer: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -o kubernetes
+    kompose.version: 1.28.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: fluentbit
+  name: fluentbit
+spec:
+  ports:
+    - name: "3001"
+      port: 3001
+      targetPort: 3001
+  selector:
+    io.kompose.service: fluentbit
+status:
+  loadBalancer: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -o kubernetes
+    kompose.version: 1.28.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: grafana
+  name: grafana
+spec:
+  ports:
+    - name: "3002"
+      port: 3002
+      targetPort: 3002
+  selector:
+    io.kompose.service: grafana
+status:
+  loadBalancer: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -o kubernetes
+    kompose.version: 1.28.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: loki
+  name: loki
+spec:
+  ports:
+    - name: "3100"
+      port: 3100
+      targetPort: 3100
+  selector:
+    io.kompose.service: loki
+status:
+  loadBalancer: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -o kubernetes
+    kompose.version: 1.28.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: prometheus
+  name: prometheus
+spec:
+  ports:
+    - name: "9090"
+      port: 9090
+      targetPort: 9090
+  selector:
+    io.kompose.service: prometheus
+status:
+  loadBalancer: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -o kubernetes
+    kompose.version: 1.28.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: tempo
+  name: tempo
+spec:
+  ports:
+    - name: "14268"
+      port: 14268
+      targetPort: 14268
+    - name: "3200"
+      port: 3200
+      targetPort: 3200
+    - name: "4317"
+      port: 4317
+      targetPort: 4317
+    - name: "3030"
+      port: 3030
+      targetPort: 3030
+    - name: "9411"
+      port: 9411
+      targetPort: 9411
+  selector:
+    io.kompose.service: tempo
+status:
+  loadBalancer: {}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -o kubernetes
+    kompose.version: 1.28.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: collector
+  name: collector
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: collector
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -o kubernetes
+        kompose.version: 1.28.0 (HEAD)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/docker-compose-default: "true"
+        io.kompose.service: collector
+    spec:
+      containers:
+        - args:
+            - --config=/etc/otel-collector-config.yaml
+          image: otel/opentelemetry-collector-contrib:0.78.0
+          name: collector
+          ports:
+            - containerPort: 4317
+          resources: {}
+          volumeMounts:
+            - mountPath: /etc/otel-collector-config.yaml
+              name: collector-claim0
+      restartPolicy: Always
+      volumes:
+        - name: collector-claim0
+          persistentVolumeClaim:
+            claimName: collector-claim0
+status: {}
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: collector-claim0
+  name: collector-claim0
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+status: {}
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  creationTimestamp: null
+  name: docker-compose-default
+spec:
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              io.kompose.network/docker-compose-default: "true"
+  podSelector:
+    matchLabels:
+      io.kompose.network/docker-compose-default: "true"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -o kubernetes
+    kompose.version: 1.28.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: fluentbit
+  name: fluentbit
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: fluentbit
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -o kubernetes
+        kompose.version: 1.28.0 (HEAD)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/docker-compose-default: "true"
+        io.kompose.service: fluentbit
+    spec:
+      containers:
+        - image: fluent/fluent-bit:latest
+          name: fluentbit
+          ports:
+            - containerPort: 3001
+          resources: {}
+          volumeMounts:
+            - mountPath: /fluent-bit/bin/docker-metadata.lua
+              name: fluentbit-claim0
+            - mountPath: /fluent-bit/etc/fluent-bit.conf
+              name: fluentbit-claim1
+            - mountPath: /var
+              name: fluentbit-claim2
+            - mountPath: /host/proc
+              name: fluentbit-claim3
+            - mountPath: /host/sys
+              name: fluentbit-claim4
+      restartPolicy: Always
+      volumes:
+        - name: fluentbit-claim0
+          persistentVolumeClaim:
+            claimName: fluentbit-claim0
+        - name: fluentbit-claim1
+          persistentVolumeClaim:
+            claimName: fluentbit-claim1
+        - name: fluentbit-claim2
+          persistentVolumeClaim:
+            claimName: fluentbit-claim2
+        - name: fluentbit-claim3
+          persistentVolumeClaim:
+            claimName: fluentbit-claim3
+        - name: fluentbit-claim4
+          persistentVolumeClaim:
+            claimName: fluentbit-claim4
+status: {}
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: fluentbit-claim0
+  name: fluentbit-claim0
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+status: {}
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: fluentbit-claim1
+  name: fluentbit-claim1
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+status: {}
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: fluentbit-claim2
+  name: fluentbit-claim2
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+status: {}
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: fluentbit-claim3
+  name: fluentbit-claim3
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+status: {}
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: fluentbit-claim4
+  name: fluentbit-claim4
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+status: {}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -o kubernetes
+    kompose.version: 1.28.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: grafana
+  name: grafana
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: grafana
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -o kubernetes
+        kompose.version: 1.28.0 (HEAD)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/docker-compose-default: "true"
+        io.kompose.service: grafana
+    spec:
+      containers:
+        - env:
+            - name: GF_AUTH_ANONYMOUS_ENABLED
+              value: "true"
+            - name: GF_AUTH_ANONYMOUS_ORG_ROLE
+              value: Admin
+            - name: GF_AUTH_DISABLE_LOGIN_FORM
+              value: "true"
+            - name: GF_FEATURE_TOGGLES_ENABLE
+              value: traceqlEditor
+            - name: GF_SERVER_HTTP_PORT
+              value: "3002"
+          image: grafana/grafana:9.4.3
+          name: grafana
+          ports:
+            - containerPort: 3002
+          resources: {}
+          volumeMounts:
+            - mountPath: /etc/grafana/provisioning/datasources/datasources.yaml
+              name: grafana-claim0
+      restartPolicy: Always
+      volumes:
+        - name: grafana-claim0
+          persistentVolumeClaim:
+            claimName: grafana-claim0
+status: {}
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: grafana-claim0
+  name: grafana-claim0
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+status: {}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -o kubernetes
+    kompose.version: 1.28.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: kbot
+  name: kbot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: kbot
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -o kubernetes
+        kompose.version: 1.28.0 (HEAD)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/docker-compose-default: "true"
+        io.kompose.service: kbot
+    spec:
+      containers:
+        - env:
+            - name: OTEL_HOST
+              value: collector:4317
+            - name: TELE_TOKEN
+              value: ${TELE_TOKEN_DEV}
+          image: ibra86dspl/kbot:v1.1.0-5ccad31-linux-amd64
+          name: kbot
+          resources: {}
+      restartPolicy: Always
+status: {}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -o kubernetes
+    kompose.version: 1.28.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: loki
+  name: loki
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: loki
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -o kubernetes
+        kompose.version: 1.28.0 (HEAD)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/docker-compose-default: "true"
+        io.kompose.service: loki
+    spec:
+      containers:
+        - args:
+            - -config.file=/etc/loki/local-config.yaml
+            - -log.level=error
+          image: grafana/loki:2.8.2
+          name: loki
+          ports:
+            - containerPort: 3100
+          resources: {}
+          volumeMounts:
+            - mountPath: /etc/loki/local-config.yaml
+              name: loki-claim0
+      restartPolicy: Always
+      volumes:
+        - name: loki-claim0
+          persistentVolumeClaim:
+            claimName: loki-claim0
+status: {}
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: loki-claim0
+  name: loki-claim0
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+status: {}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -o kubernetes
+    kompose.version: 1.28.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: prometheus
+  name: prometheus
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: prometheus
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -o kubernetes
+        kompose.version: 1.28.0 (HEAD)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/docker-compose-default: "true"
+        io.kompose.service: prometheus
+    spec:
+      containers:
+        - args:
+            - --config.file=/etc/prometheus.yaml
+            - --web.enable-remote-write-receiver
+            - --enable-feature=exemplar-storage
+          image: prom/prometheus:latest
+          name: prometheus
+          ports:
+            - containerPort: 9090
+          resources: {}
+          volumeMounts:
+            - mountPath: /etc/prometheus.yaml
+              name: prometheus-claim0
+      restartPolicy: Always
+      volumes:
+        - name: prometheus-claim0
+          persistentVolumeClaim:
+            claimName: prometheus-claim0
+status: {}
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: prometheus-claim0
+  name: prometheus-claim0
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+status: {}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -o kubernetes
+    kompose.version: 1.28.0 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: tempo
+  name: tempo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: tempo
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -o kubernetes
+        kompose.version: 1.28.0 (HEAD)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/docker-compose-default: "true"
+        io.kompose.service: tempo
+    spec:
+      containers:
+        - args:
+            - -config.file=/etc/tempo.yaml
+          image: grafana/tempo:2.1.1
+          name: tempo
+          ports:
+            - containerPort: 14268
+            - containerPort: 3200
+            - containerPort: 4317
+            - containerPort: 3030
+            - containerPort: 9411
+          resources: {}
+          volumeMounts:
+            - mountPath: /etc/tempo.yaml
+              name: tempo-claim0
+      restartPolicy: Always
+      volumes:
+        - name: tempo-claim0
+          persistentVolumeClaim:
+            claimName: tempo-claim0
+status: {}
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: tempo-claim0
+  name: tempo-claim0
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+status: {}
+
